@@ -284,22 +284,22 @@ export default function LandingPage() {
                     </div>
                   ))}
                 </div>
-                <div className="space-y-2">
-                  {[
-                    { tipo: "ALTA", desc: "17 gastos sin factura ni débito bancario", monto: "$2.964" },
-                    { tipo: "ALTA", desc: "Personal representa 128% del gasto total", monto: "$1.500.697" },
-                    { tipo: "ALTA", desc: "Diferencia caja/banco detectada", monto: "$897.777" },
-                    { tipo: "MEDIA", desc: "1 factura sin débito bancario", monto: "—" },
-                  ].map((a, i) => (
-                    <div key={i} className="flex items-center gap-3 bg-slate-900/50 rounded-lg px-3 py-2 border border-slate-800/50">
-                      <span className={["text-xs font-mono font-bold px-2 py-0.5 rounded", a.tipo === "ALTA" ? "bg-red-950 text-red-400" : "bg-amber-950 text-amber-400"].join(" ")}>
-                        {g.tipo}
-                      </span>
-                      <span className="text-xs text-slate-300 flex-1">{a.desc}</span>
-                      <span className="text-xs font-mono text-slate-500">{a.monto}</span>
-                    </div>
-                  ))}
-                </div>
+            <div className="space-y-2">
+                {[
+                  { tipo: "ALTA", desc: "17 gastos sin factura ni débito bancario", monto: "$2.964" },
+                  { tipo: "ALTA", desc: "Personal representa 128% del gasto total", monto: "$1.500.697" },
+                  { tipo: "ALTA", desc: "Diferencia caja/banco detectada", monto: "$897.777" },
+                  { tipo: "MEDIA", desc: "1 factura sin débito bancario", monto: "—" },
+                ].map((a, i) => (
+                  <div key={i} className="flex items-center gap-3 bg-slate-900/50 rounded-lg px-3 py-2 border border-slate-800/50">
+                    <span className={["text-xs font-mono font-bold px-2 py-0.5 rounded", a.tipo === "ALTA" ? "bg-red-950 text-red-400" : "bg-amber-950 text-amber-400"].join(" ")}>
+                      {a.tipo} {/* ← Corregido de g.tipo a a.tipo */}
+                    </span>
+                    <span className="text-xs text-slate-300 flex-1">{a.desc}</span>
+                    <span className="text-xs font-mono text-slate-500">{a.monto}</span>
+                  </div>
+                ))}
+              </div>
               </div>
             </div>
           </div>
