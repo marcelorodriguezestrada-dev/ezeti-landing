@@ -13,8 +13,12 @@ export default function LandingPage() {
       const step = target / (duration / 16);
       const timer = setInterval(() => {
         start += step;
-        if (start >= target) { setter(target); clearInterval(timer); }
-        else setter(Math.floor(start));
+        if (start >= target) { 
+          setter(target); 
+          clearInterval(timer); 
+        } else {
+          setter(Math.floor(start));
+        }
       }, 16);
     };
     animate(setCount1, 70, 1500);
@@ -43,6 +47,7 @@ export default function LandingPage() {
             <a href="#nosotros" className="hover:text-white transition-colors">Nosotros</a>
           </nav>
           
+          <a 
             href={email}
             className="bg-cyan-500 text-slate-950 text-sm font-semibold px-5 py-2 rounded-lg hover:bg-cyan-400 transition-all hover:scale-105"
           >
@@ -79,15 +84,14 @@ export default function LandingPage() {
               datos complejos
             </span>
             <br />
-            en decisiones{" "}
-            <span className="text-cyan-400">inteligentes</span>
+            en decisiones <span className="text-cyan-400">inteligentes</span>
           </h1>
           <p className="text-xl text-slate-400 max-w-3xl mb-12 leading-relaxed">
             Arquitectura de datos de clase enterprise, microagentes de IA y pipelines deterministas para
             operaciones críticas en Fintech, Banca y Scale-ups. <span className="text-white font-medium">15 años</span> construyendo infraestructura que no falla.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            
+            <a 
               href="#casosdeuso"
               className="inline-flex items-center justify-center gap-2 bg-cyan-500 text-slate-950 font-bold px-8 py-4 rounded-xl hover:bg-cyan-400 transition-all hover:scale-105 text-base"
             >
@@ -95,6 +99,7 @@ export default function LandingPage() {
               <span>→</span>
             </a>
             
+            <a 
               href={email}
               className="inline-flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 text-white font-semibold px-8 py-4 rounded-xl hover:border-slate-500 transition-all text-base"
             >
@@ -247,6 +252,7 @@ export default function LandingPage() {
                 ))}
               </div>
               
+              <a 
                 href={email}
                 className="inline-flex items-center gap-2 bg-cyan-500 text-slate-950 font-bold px-8 py-4 rounded-xl hover:bg-cyan-400 transition-all hover:scale-105"
               >
@@ -287,7 +293,7 @@ export default function LandingPage() {
                   ].map((a, i) => (
                     <div key={i} className="flex items-center gap-3 bg-slate-900/50 rounded-lg px-3 py-2 border border-slate-800/50">
                       <span className={["text-xs font-mono font-bold px-2 py-0.5 rounded", a.tipo === "ALTA" ? "bg-red-950 text-red-400" : "bg-amber-950 text-amber-400"].join(" ")}>
-                        {a.tipo}
+                        {g.tipo}
                       </span>
                       <span className="text-xs text-slate-300 flex-1">{a.desc}</span>
                       <span className="text-xs font-mono text-slate-500">{a.monto}</span>
@@ -439,7 +445,7 @@ export default function LandingPage() {
             30 minutos de diagnóstico sin compromiso. Analizamos tu stack, identificamos los cuellos de botella y te mostramos el roadmap.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            
+            <a 
               href={email}
               className="inline-flex items-center justify-center gap-2 bg-cyan-500 text-slate-950 font-black px-10 py-5 rounded-2xl hover:bg-cyan-400 transition-all hover:scale-105 text-lg"
             >
