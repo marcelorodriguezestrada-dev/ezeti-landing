@@ -2,10 +2,14 @@
 import React, { useEffect, useState } from "react";
 
 export default function LandingPage() {
+  const whatsapp = "https://wa.me/5491167076678?text=Hola%20Marcelo%2C%20quiero%20un%20diagn%C3%B3stico%20gratuito%20de%20mi%20infraestructura";
+  const linkedin = "https://www.linkedin.com/in/marcelo-rodriguez-estrada";
   const email = "mailto:marcelo.rodriguez.estrada@gmail.com";
+
   const [count1, setCount1] = useState(0);
   const [count2, setCount2] = useState(0);
   const [count3, setCount3] = useState(0);
+  const [count4, setCount4] = useState(0);
 
   useEffect(() => {
     const animate = (setter: (n: number) => void, target: number, duration: number) => {
@@ -13,9 +17,9 @@ export default function LandingPage() {
       const step = target / (duration / 16);
       const timer = setInterval(() => {
         start += step;
-        if (start >= target) { 
-          setter(target); 
-          clearInterval(timer); 
+        if (start >= target) {
+          setter(target);
+          clearInterval(timer);
         } else {
           setter(Math.floor(start));
         }
@@ -23,7 +27,8 @@ export default function LandingPage() {
     };
     animate(setCount1, 70, 1500);
     animate(setCount2, 15, 1200);
-    animate(setCount3, 2000, 1800);
+    animate(setCount3, 19, 1600);
+    animate(setCount4, 2000, 1800);
   }, []);
 
   return (
@@ -46,12 +51,13 @@ export default function LandingPage() {
             <a href="#stack" className="hover:text-white transition-colors">Stack</a>
             <a href="#nosotros" className="hover:text-white transition-colors">Nosotros</a>
           </nav>
-          
-          <a 
-            href={email}
-            className="bg-cyan-500 text-slate-950 text-sm font-semibold px-5 py-2 rounded-lg hover:bg-cyan-400 transition-all hover:scale-105"
+          <a
+            href={whatsapp}
+            target="_blank"
+            rel="noreferrer"
+            className="bg-cyan-500 text-slate-950 text-sm font-semibold px-5 py-2 rounded-lg hover:bg-cyan-400 transition-all hover:scale-105 flex items-center gap-2"
           >
-            Agendar Diagnóstico
+            💬 Agendar por WhatsApp
           </a>
         </div>
       </header>
@@ -60,18 +66,11 @@ export default function LandingPage() {
       <section className="relative overflow-hidden pt-24 pb-32">
         <div
           className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 20% 50%, #06b6d4 0%, transparent 50%), radial-gradient(circle at 80% 20%, #6366f1 0%, transparent 40%)",
-          }}
+          style={{ backgroundImage: "radial-gradient(circle at 20% 50%, #06b6d4 0%, transparent 50%), radial-gradient(circle at 80% 20%, #6366f1 0%, transparent 40%)" }}
         />
         <div
           className="absolute inset-0 opacity-5"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, #cbd5e1 1px, transparent 1px), linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)",
-            backgroundSize: "4rem 4rem",
-          }}
+          style={{ backgroundImage: "linear-gradient(to right, #cbd5e1 1px, transparent 1px), linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)", backgroundSize: "4rem 4rem" }}
         />
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <div className="inline-flex items-center gap-2 bg-slate-900/80 border border-cyan-500/30 px-4 py-2 rounded-full text-xs font-mono text-cyan-400 mb-8">
@@ -88,22 +87,24 @@ export default function LandingPage() {
           </h1>
           <p className="text-xl text-slate-400 max-w-3xl mb-12 leading-relaxed">
             Arquitectura de datos de clase enterprise, microagentes de IA y pipelines deterministas para
-            operaciones críticas en Fintech, Banca y Scale-ups. <span className="text-white font-medium">15 años</span> construyendo infraestructura que no falla.
+            operaciones críticas en Fintech, Banca y Scale-ups.{" "}
+            <span className="text-white font-medium">15 años</span> construyendo infraestructura que no falla.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <a 
+            <a
               href="#casosdeuso"
               className="inline-flex items-center justify-center gap-2 bg-cyan-500 text-slate-950 font-bold px-8 py-4 rounded-xl hover:bg-cyan-400 transition-all hover:scale-105 text-base"
             >
               Ver AuditIA en acción
               <span>→</span>
             </a>
-            
-            <a 
-              href={email}
+            <a
+              href={whatsapp}
+              target="_blank"
+              rel="noreferrer"
               className="inline-flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 text-white font-semibold px-8 py-4 rounded-xl hover:border-slate-500 transition-all text-base"
             >
-              Diagnóstico gratuito
+              💬 Diagnóstico gratuito
             </a>
           </div>
         </div>
@@ -115,8 +116,8 @@ export default function LandingPage() {
           {[
             { value: count1 + "%", label: "Reducción en tiempos de procesamiento ETL", sub: "Mercado Libre · Accenture" },
             { value: count2 + "+", label: "Años de experiencia en Data Engineering", sub: "Fintech · Banca · Insurtech" },
-            { value: "$" + count2 + "M+", label: "En activos auditados con IA", sub: "AuditIA Consorcial" },
-            { value: "$" + count3, label: "USD ahorro mensual en cómputo cloud", sub: "Optimización FinOps" },
+            { value: "$" + count3 + "M+", label: "En activos auditados con IA", sub: "AuditIA Consorcial" },
+            { value: "$" + count4, label: "USD ahorro mensual en cómputo cloud", sub: "Optimización FinOps" },
           ].map((m, i) => (
             <div key={i} className="text-center">
               <div className="text-4xl font-black text-cyan-400 mb-1">{m.value}</div>
@@ -132,58 +133,19 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="mb-16">
             <span className="text-xs font-mono text-cyan-500 uppercase tracking-widest">Servicios</span>
-            <h2 className="text-4xl font-black text-white mt-3 mb-4">
-              Lo que construimos juntos
-            </h2>
+            <h2 className="text-4xl font-black text-white mt-3 mb-4">Lo que construimos juntos</h2>
             <p className="text-slate-400 max-w-2xl">
               Desde la arquitectura base hasta agentes autónomos en producción. Cada engagement entrega resultados medibles desde la semana uno.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              {
-                icon: "⚡",
-                tag: "Core",
-                title: "Data Engineering & Pipelines",
-                desc: "Diseño e implementación de arquitecturas medallón, ETL/ELT y warehouses en AWS Redshift, BigQuery y Snowflake. Eliminamos deuda técnica y reducimos costos de cómputo hasta 70%.",
-                stack: ["Airflow", "dbt", "Python", "SQL"],
-              },
-              {
-                icon: "🤖",
-                tag: "IA Aplicada",
-                title: "Microagentes & Automatización IA",
-                desc: "Diseño de agentes autónomos con N8N y LLMs para automatización de procesos complejos: auditoría documental, síntesis de datos, detección de anomalías y orquestación de workflows.",
-                stack: ["N8N", "LLMs", "Python", "OCR"],
-              },
-              {
-                icon: "☁️",
-                tag: "Cloud",
-                title: "Arquitectura Cloud & MLOps",
-                desc: "Infraestructura robusta en AWS y GCP con CI/CD para datos, gobernanza end-to-end y monitoreo continuo. Desde startup hasta escala enterprise.",
-                stack: ["AWS", "GCP", "Terraform", "Docker"],
-              },
-              {
-                icon: "🏦",
-                tag: "Fintech",
-                title: "Fintech & Cumplimiento BCRA",
-                desc: "Asesoramiento en PSP, integración KYC/AML, onboarding digital y gestión de cuentas recaudadoras. Navegamos el ecosistema regulatorio argentino.",
-                stack: ["KYC/AML", "APIs Financieras", "Nosis", "Comafi"],
-              },
-              {
-                icon: "📊",
-                tag: "Analytics",
-                title: "BI & Analytics Engineering",
-                desc: "Capa semántica con métricas unificadas, modelos dbt, dashboards ejecutivos y OKRs. Tu equipo de negocio toma decisiones con datos en los que puede confiar.",
-                stack: ["Looker", "Power BI", "dbt", "LightGBM"],
-              },
-              {
-                icon: "🔍",
-                tag: "Nuevo",
-                title: "AuditIA — Auditoría Forense IA",
-                desc: "Sistema de auditoría automatizada con validación cruzada triple: Balance vs. Facturas OCR/CAE vs. Extractos Bancarios. Detecta fraude, pagos duplicados y retiros sin respaldo en minutos.",
-                stack: ["OCR", "IA Forense", "Supabase", "Next.js"],
-                highlight: true,
-              },
+              { icon: "⚡", tag: "Core", title: "Data Engineering & Pipelines", desc: "Diseño e implementación de arquitecturas medallón, ETL/ELT y warehouses en AWS Redshift, BigQuery y Snowflake. Eliminamos deuda técnica y reducimos costos de cómputo hasta 70%.", stack: ["Airflow", "dbt", "Python", "SQL"], highlight: false },
+              { icon: "🤖", tag: "IA Aplicada", title: "Microagentes & Automatización IA", desc: "Diseño de agentes autónomos con N8N y LLMs para automatización de procesos complejos: auditoría documental, síntesis de datos, detección de anomalías y orquestación de workflows.", stack: ["N8N", "LLMs", "Python", "OCR"], highlight: false },
+              { icon: "☁️", tag: "Cloud", title: "Arquitectura Cloud & MLOps", desc: "Infraestructura robusta en AWS y GCP con CI/CD para datos, gobernanza end-to-end y monitoreo continuo. Desde startup hasta escala enterprise.", stack: ["AWS", "GCP", "Terraform", "Docker"], highlight: false },
+              { icon: "🏦", tag: "Fintech", title: "Fintech & Cumplimiento BCRA", desc: "Asesoramiento en PSP, integración KYC/AML, onboarding digital y gestión de cuentas recaudadoras. Navegamos el ecosistema regulatorio argentino.", stack: ["KYC/AML", "APIs Financieras", "Nosis", "Comafi"], highlight: false },
+              { icon: "📊", tag: "Analytics", title: "BI & Analytics Engineering", desc: "Capa semántica con métricas unificadas, modelos dbt, dashboards ejecutivos y OKRs. Tu equipo de negocio toma decisiones con datos en los que puede confiar.", stack: ["Looker", "Power BI", "dbt", "LightGBM"], highlight: false },
+              { icon: "🔍", tag: "Nuevo", title: "AuditIA — Auditoría Forense IA", desc: "Sistema de auditoría automatizada con validación cruzada triple: Balance vs. Facturas OCR/CAE vs. Extractos Bancarios. Detecta fraude, pagos duplicados y retiros sin respaldo en minutos.", stack: ["OCR", "IA Forense", "Supabase", "Next.js"], highlight: true },
             ].map((s, i) => (
               <div
                 key={i}
@@ -196,14 +158,7 @@ export default function LandingPage() {
               >
                 <div className="flex items-start justify-between mb-4">
                   <span className="text-3xl">{s.icon}</span>
-                  <span
-                    className={[
-                      "text-xs font-mono px-2 py-1 rounded-full",
-                      s.highlight
-                        ? "bg-cyan-500/20 text-cyan-400"
-                        : "bg-slate-800 text-slate-400",
-                    ].join(" ")}
-                  >
+                  <span className={["text-xs font-mono px-2 py-1 rounded-full", s.highlight ? "bg-cyan-500/20 text-cyan-400" : "bg-slate-800 text-slate-400"].join(" ")}>
                     {s.tag}
                   </span>
                 </div>
@@ -211,9 +166,7 @@ export default function LandingPage() {
                 <p className="text-slate-400 text-sm leading-relaxed mb-4">{s.desc}</p>
                 <div className="flex flex-wrap gap-2">
                   {s.stack.map((t) => (
-                    <span key={t} className="text-xs bg-slate-800/80 text-slate-300 px-2 py-1 rounded-md">
-                      {t}
-                    </span>
+                    <span key={t} className="text-xs bg-slate-800/80 text-slate-300 px-2 py-1 rounded-md">{t}</span>
                   ))}
                 </div>
               </div>
@@ -251,12 +204,13 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              
-              <a 
-                href={email}
+              <a
+                href={whatsapp}
+                target="_blank"
+                rel="noreferrer"
                 className="inline-flex items-center gap-2 bg-cyan-500 text-slate-950 font-bold px-8 py-4 rounded-xl hover:bg-cyan-400 transition-all hover:scale-105"
               >
-                Quiero una demo
+                💬 Quiero una demo
                 <span>→</span>
               </a>
             </div>
@@ -272,9 +226,9 @@ export default function LandingPage() {
               <div className="p-6">
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   {[
-                    { label: "Total gastos", value: "$4.941.610", sub: "Liquidación mensual" },
+                    { label: "Total gastos", value: "$4.941.610", sub: "Liquidación mensual", red: false },
                     { label: "Score auditoría", value: "20/100", sub: "🔴 Crítico", red: true },
-                    { label: "Alertas activas", value: "5", sub: "4 alta · 1 media" },
+                    { label: "Alertas activas", value: "5", sub: "4 alta · 1 media", red: false },
                     { label: "Sin factura", value: "$1.490.319", sub: "Monto en riesgo", red: true },
                   ].map((c, i) => (
                     <div key={i} className={["rounded-xl p-3 border", c.red ? "bg-red-950/30 border-red-800/50" : "bg-slate-900 border-slate-800"].join(" ")}>
@@ -284,22 +238,22 @@ export default function LandingPage() {
                     </div>
                   ))}
                 </div>
-            <div className="space-y-2">
-                {[
-                  { tipo: "ALTA", desc: "17 gastos sin factura ni débito bancario", monto: "$2.964" },
-                  { tipo: "ALTA", desc: "Personal representa 128% del gasto total", monto: "$1.500.697" },
-                  { tipo: "ALTA", desc: "Diferencia caja/banco detectada", monto: "$897.777" },
-                  { tipo: "MEDIA", desc: "1 factura sin débito bancario", monto: "—" },
-                ].map((a, i) => (
-                  <div key={i} className="flex items-center gap-3 bg-slate-900/50 rounded-lg px-3 py-2 border border-slate-800/50">
-                    <span className={["text-xs font-mono font-bold px-2 py-0.5 rounded", a.tipo === "ALTA" ? "bg-red-950 text-red-400" : "bg-amber-950 text-amber-400"].join(" ")}>
-                      {a.tipo} {/* ← Corregido de g.tipo a a.tipo */}
-                    </span>
-                    <span className="text-xs text-slate-300 flex-1">{a.desc}</span>
-                    <span className="text-xs font-mono text-slate-500">{a.monto}</span>
-                  </div>
-                ))}
-              </div>
+                <div className="space-y-2">
+                  {[
+                    { tipo: "ALTA", desc: "17 gastos sin factura ni débito bancario", monto: "$2.964" },
+                    { tipo: "ALTA", desc: "Personal representa 128% del gasto total", monto: "$1.500.697" },
+                    { tipo: "ALTA", desc: "Diferencia caja/banco detectada", monto: "$897.777" },
+                    { tipo: "MEDIA", desc: "1 factura sin débito bancario", monto: "—" },
+                  ].map((a, i) => (
+                    <div key={i} className="flex items-center gap-3 bg-slate-900/50 rounded-lg px-3 py-2 border border-slate-800/50">
+                      <span className={["text-xs font-mono font-bold px-2 py-0.5 rounded", a.tipo === "ALTA" ? "bg-red-950 text-red-400" : "bg-amber-950 text-amber-400"].join(" ")}>
+                        {a.tipo}
+                      </span>
+                      <span className="text-xs text-slate-300 flex-1">{a.desc}</span>
+                      <span className="text-xs font-mono text-slate-500">{a.monto}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -348,22 +302,10 @@ export default function LandingPage() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              {
-                cat: "Inteligencia Artificial",
-                items: ["Microagentes autónomos", "LightGBM", "Redes neuronales", "Detección anomalías", "OCR avanzado", "N8N Flows"],
-              },
-              {
-                cat: "Data Engineering",
-                items: ["Apache Airflow", "dbt", "ETL/ELT", "Star Schema", "CI/CD datos", "Modelado dimensional"],
-              },
-              {
-                cat: "Cloud & DevOps",
-                items: ["AWS S3 · Redshift", "GCP BigQuery", "Dataflow", "Data Catalog", "Microservicios", "Infraestructura código"],
-              },
-              {
-                cat: "BI & Fintech",
-                items: ["Looker · Power BI", "KYC/AML", "APIs BCRA/PSP", "Trading algorítmico", "QuantConnect", "OKRs ejecutivos"],
-              },
+              { cat: "Inteligencia Artificial", items: ["Microagentes autónomos", "LightGBM", "Redes neuronales", "Detección anomalías", "OCR avanzado", "N8N Flows"] },
+              { cat: "Data Engineering", items: ["Apache Airflow", "dbt", "ETL/ELT", "Star Schema", "CI/CD datos", "Modelado dimensional"] },
+              { cat: "Cloud & DevOps", items: ["AWS S3 · Redshift", "GCP BigQuery", "Dataflow", "Data Catalog", "Microservicios", "Infraestructura código"] },
+              { cat: "BI & Fintech", items: ["Looker · Power BI", "KYC/AML", "APIs BCRA/PSP", "Trading algorítmico", "QuantConnect", "OKRs ejecutivos"] },
             ].map((g, i) => (
               <div key={i} className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
                 <h3 className="text-sm font-bold text-cyan-400 mb-4 uppercase tracking-wide">{g.cat}</h3>
@@ -387,21 +329,41 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             <div>
               <span className="text-xs font-mono text-cyan-500 uppercase tracking-widest">Quién está detrás</span>
-              <h2 className="text-4xl font-black text-white mt-3 mb-6">
-                Marcelo Rodriguez Estrada
-              </h2>
+              <h2 className="text-4xl font-black text-white mt-3 mb-6">Marcelo Rodriguez Estrada</h2>
               <p className="text-slate-400 leading-relaxed mb-6">
                 Senior Data & ML Engineer con más de 15 años en la intersección de Fintech, Arquitectura Cloud e Inteligencia Artificial. Doble Maestría en Data Mining (UBA) y Finanzas (UTDT).
               </p>
               <p className="text-slate-400 leading-relaxed mb-8">
                 Construí ecosistemas de datos para Mercado Libre (vía Accenture), KAVAK, MetLife y Telecom. Hoy dirijo EZETI, donde aplicamos IA a problemas reales con impacto directo en el bottom line.
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3 mb-8">
                 {["MSc. Data Mining · UBA", "MSc. Finanzas · UTDT", "Inglés C1+ Profesional"].map((b) => (
-                  <span key={b} className="text-xs bg-slate-800 border border-slate-700 text-slate-300 px-3 py-1.5 rounded-full">
-                    {b}
-                  </span>
+                  <span key={b} className="text-xs bg-slate-800 border border-slate-700 text-slate-300 px-3 py-1.5 rounded-full">{b}</span>
                 ))}
+              </div>
+              <div className="flex gap-3 flex-wrap">
+                <a
+                  href={linkedin}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-600 text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
+                >
+                  🔗 LinkedIn
+                </a>
+                <a
+                  href={whatsapp}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
+                >
+                  💬 WhatsApp
+                </a>
+                <a
+                  href={email}
+                  className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
+                >
+                  ✉️ Email
+                </a>
               </div>
             </div>
             <div className="space-y-4">
@@ -431,9 +393,7 @@ export default function LandingPage() {
       <section className="py-28 relative overflow-hidden">
         <div
           className="absolute inset-0 opacity-30"
-          style={{
-            backgroundImage: "radial-gradient(circle at 50% 50%, #06b6d4 0%, transparent 60%)",
-          }}
+          style={{ backgroundImage: "radial-gradient(circle at 50% 50%, #06b6d4 0%, transparent 60%)" }}
         />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <span className="text-xs font-mono text-cyan-500 uppercase tracking-widest">Empezá hoy</span>
@@ -444,16 +404,25 @@ export default function LandingPage() {
           <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
             30 minutos de diagnóstico sin compromiso. Analizamos tu stack, identificamos los cuellos de botella y te mostramos el roadmap.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a 
-              href={email}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+            <a
+              href={whatsapp}
+              target="_blank"
+              rel="noreferrer"
               className="inline-flex items-center justify-center gap-2 bg-cyan-500 text-slate-950 font-black px-10 py-5 rounded-2xl hover:bg-cyan-400 transition-all hover:scale-105 text-lg"
             >
-              Agendar diagnóstico gratuito
-              <span>→</span>
+              💬 Escribir por WhatsApp →
+            </a>
+            <a
+              href={linkedin}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-600 text-white font-semibold px-8 py-5 rounded-2xl transition-colors text-base"
+            >
+              🔗 LinkedIn
             </a>
           </div>
-          <p className="text-slate-600 text-sm mt-6">
+          <p className="text-slate-600 text-sm">
             marcelo.rodriguez.estrada@gmail.com · Belgrano, CABA · +54 11 6707-6678
           </p>
         </div>
@@ -476,7 +445,8 @@ export default function LandingPage() {
           <div className="flex gap-6 text-xs text-slate-500">
             <a href="#servicios" className="hover:text-white transition-colors">Servicios</a>
             <a href="#casosdeuso" className="hover:text-white transition-colors">AuditIA</a>
-            <a href={email} className="hover:text-white transition-colors">Contacto</a>
+            <a href={whatsapp} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">WhatsApp</a>
+            <a href={linkedin} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">LinkedIn</a>
           </div>
         </div>
       </footer>
