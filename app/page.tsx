@@ -5,6 +5,7 @@ export default function LandingPage() {
   const whatsapp = "https://wa.me/5491167076678?text=Hola%20Marcelo%2C%20quiero%20un%20diagn%C3%B3stico%20gratuito%20de%20mi%20infraestructura";
   const linkedin = "https://www.linkedin.com/in/marcelo-rodriguez-estrada";
   const email = "mailto:marcelo.rodriguez.estrada@gmail.com";
+  const paceia = "https://paceia.ezeti.pro";
 
   const [count1, setCount1] = useState(0);
   const [count2, setCount2] = useState(0);
@@ -48,6 +49,7 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center gap-8 text-sm text-slate-400">
             <a href="#servicios" className="hover:text-white transition-colors">Servicios</a>
             <a href="#casosdeuso" className="hover:text-white transition-colors">Casos de Uso</a>
+            <a href="#paceia" className="hover:text-white transition-colors">PaceAI</a>
             <a href="#stack" className="hover:text-white transition-colors">Stack</a>
             <a href="#nosotros" className="hover:text-white transition-colors">Nosotros</a>
           </nav>
@@ -146,6 +148,7 @@ export default function LandingPage() {
               { icon: "🏦", tag: "Fintech", title: "Fintech & Cumplimiento BCRA", desc: "Asesoramiento en PSP, integración KYC/AML, onboarding digital y gestión de cuentas recaudadoras. Navegamos el ecosistema regulatorio argentino.", stack: ["KYC/AML", "APIs Financieras", "Nosis", "Comafi"], highlight: false },
               { icon: "📊", tag: "Analytics", title: "BI & Analytics Engineering", desc: "Capa semántica con métricas unificadas, modelos dbt, dashboards ejecutivos y OKRs. Tu equipo de negocio toma decisiones con datos en los que puede confiar.", stack: ["Looker", "Power BI", "dbt", "LightGBM"], highlight: false },
               { icon: "🔍", tag: "Nuevo", title: "AuditIA — Auditoría Forense IA", desc: "Sistema de auditoría automatizada con validación cruzada triple: Balance vs. Facturas OCR/CAE vs. Extractos Bancarios. Detecta fraude, pagos duplicados y retiros sin respaldo en minutos.", stack: ["OCR", "IA Forense", "Supabase", "Next.js"], highlight: true },
+              { icon: "🏃", tag: "Nuevo", title: "PaceAI — Coaching de Running con IA", desc: "Plataforma de entrenamiento personalizado que genera planes periodizados según metodología profesional, con zonas de ritmo calculadas, mapas de circuitos reales en Buenos Aires y chat directo con coach.", stack: ["React", "Firebase", "LLMs", "Leaflet"], highlight: true },
             ].map((s, i) => (
               <div
                 key={i}
@@ -251,6 +254,93 @@ export default function LandingPage() {
                       </span>
                       <span className="text-xs text-slate-300 flex-1">{a.desc}</span>
                       <span className="text-xs font-mono text-slate-500">{a.monto}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CASO DE USO: PACEAI */}
+      <section id="paceia" className="py-28">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="mb-4">
+            <span className="text-xs font-mono text-cyan-500 uppercase tracking-widest">Caso de Éxito · Producto en Producción</span>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-4xl font-black text-white mb-6 leading-tight">
+                PaceAI —<br />
+                <span className="text-cyan-400">Un coach de running</span>
+                <br />que nunca duerme
+              </h2>
+              <p className="text-slate-400 mb-8 leading-relaxed">
+                Diseñé y desarrollé una plataforma completa de coaching deportivo con IA: planes de entrenamiento periodizados,
+                cálculo automático de zonas de ritmo, mapas de circuitos reales por barrio y chat directo con coach humano.
+                De la arquitectura de datos al producto que un corredor usa cada semana.
+              </p>
+              <div className="space-y-4 mb-10">
+                {[
+                  { label: "Carreras integradas", value: "6+ en Buenos Aires", color: "text-cyan-400" },
+                  { label: "Planes generados", value: "Periodización automática por IA", color: "text-green-400" },
+                  { label: "Zonas de entrenamiento", value: "8 circuitos con mapas reales", color: "text-amber-400" },
+                  { label: "Modelo de negocio", value: "Freemium · 3 niveles de suscripción", color: "text-cyan-400" },
+                ].map((r, i) => (
+                  <div key={i} className="flex items-center justify-between py-3 border-b border-slate-800/50">
+                    <span className="text-slate-400 text-sm">{r.label}</span>
+                    <span className={["font-bold text-sm", r.color].join(" ")}>{r.value}</span>
+                  </div>
+                ))}
+              </div>
+              <a
+                href={paceia}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 bg-cyan-500 text-slate-950 font-bold px-8 py-4 rounded-xl hover:bg-cyan-400 transition-all hover:scale-105"
+              >
+                🏃 Ver PaceAI en vivo
+                <span>→</span>
+              </a>
+            </div>
+
+            {/* DASHBOARD MOCKUP */}
+            <div className="bg-slate-950 border border-slate-700 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="border-b border-slate-800 px-4 py-3 flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                <div className="w-3 h-3 rounded-full bg-green-500" />
+                <span className="ml-3 text-xs font-mono text-slate-500">paceia.ezeti.pro — Plan Media Maratón</span>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  {[
+                    { label: "Semanas de plan", value: "16", sub: "Macrociclo completo" },
+                    { label: "Fase actual", value: "Específica", sub: "🟢 En curso" },
+                    { label: "Volumen semanal", value: "58 km", sub: "Progresión +8%" },
+                    { label: "Días para carrera", value: "34", sub: "⚡ Sharpening pronto" },
+                  ].map((c, i) => (
+                    <div key={i} className="rounded-xl p-3 border bg-slate-900 border-slate-800">
+                      <div className="text-xs text-slate-500 mb-1">{c.label}</div>
+                      <div className="text-lg font-black text-white">{c.value}</div>
+                      <div className="text-xs text-slate-500">{c.sub}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { dia: "MAR", desc: "Calidad — Intervalos 1000m", dist: "10km" },
+                    { dia: "JUE", desc: "Calidad — Tempo run", dist: "10km" },
+                    { dia: "SAB", desc: "Fondo largo progresivo", dist: "22km" },
+                    { dia: "DOM", desc: "Descanso total + elongación", dist: "—" },
+                  ].map((a, i) => (
+                    <div key={i} className="flex items-center gap-3 bg-slate-900/50 rounded-lg px-3 py-2 border border-slate-800/50">
+                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-400">
+                        {a.dia}
+                      </span>
+                      <span className="text-xs text-slate-300 flex-1">{a.desc}</span>
+                      <span className="text-xs font-mono text-slate-500">{a.dist}</span>
                     </div>
                   ))}
                 </div>
@@ -445,6 +535,7 @@ export default function LandingPage() {
           <div className="flex gap-6 text-xs text-slate-500">
             <a href="#servicios" className="hover:text-white transition-colors">Servicios</a>
             <a href="#casosdeuso" className="hover:text-white transition-colors">AuditIA</a>
+            <a href="#paceia" className="hover:text-white transition-colors">PaceAI</a>
             <a href={whatsapp} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">WhatsApp</a>
             <a href={linkedin} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">LinkedIn</a>
           </div>
