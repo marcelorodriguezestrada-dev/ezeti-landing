@@ -6,6 +6,9 @@ export default function LandingPage() {
   const linkedin = "https://www.linkedin.com/in/marcelo-rodriguez-estrada";
   const email = "mailto:marcelo.rodriguez.estrada@gmail.com";
   const paceia = "https://paceia.ezeti.pro";
+  const auditiaDemo = "https://auditia-consorcial.onrender.com/overview";
+  const jobtrack = "https://jobtrack-ai-frontend.onrender.com/";
+  const incubadora = "https://incubadora-ai-frontend.onrender.com/";
 
   const [count1, setCount1] = useState(0);
   const [count2, setCount2] = useState(0);
@@ -142,22 +145,26 @@ export default function LandingPage() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: "⚡", tag: "Core", title: "Data Engineering & Pipelines", desc: "Diseño e implementación de arquitecturas medallón, ETL/ELT y warehouses en AWS Redshift, BigQuery y Snowflake. Eliminamos deuda técnica y reducimos costos de cómputo hasta 70%.", stack: ["Airflow", "dbt", "Python", "SQL"], highlight: false },
-              { icon: "🤖", tag: "IA Aplicada", title: "Microagentes & Automatización IA", desc: "Diseño de agentes autónomos con N8N y LLMs para automatización de procesos complejos: auditoría documental, síntesis de datos, detección de anomalías y orquestación de workflows.", stack: ["N8N", "LLMs", "Python", "OCR"], highlight: false },
-              { icon: "☁️", tag: "Cloud", title: "Arquitectura Cloud & MLOps", desc: "Infraestructura robusta en AWS y GCP con CI/CD para datos, gobernanza end-to-end y monitoreo continuo. Desde startup hasta escala enterprise.", stack: ["AWS", "GCP", "Terraform", "Docker"], highlight: false },
-              { icon: "🏦", tag: "Fintech", title: "Fintech & Cumplimiento BCRA", desc: "Asesoramiento en PSP, integración KYC/AML, onboarding digital y gestión de cuentas recaudadoras. Navegamos el ecosistema regulatorio argentino.", stack: ["KYC/AML", "APIs Financieras", "Nosis", "Comafi"], highlight: false },
-              { icon: "📊", tag: "Analytics", title: "BI & Analytics Engineering", desc: "Capa semántica con métricas unificadas, modelos dbt, dashboards ejecutivos y OKRs. Tu equipo de negocio toma decisiones con datos en los que puede confiar.", stack: ["Looker", "Power BI", "dbt", "LightGBM"], highlight: false },
-              { icon: "🔍", tag: "Nuevo", title: "AuditIA — Auditoría Forense IA", desc: "Sistema de auditoría automatizada con validación cruzada triple: Balance vs. Facturas OCR/CAE vs. Extractos Bancarios. Detecta fraude, pagos duplicados y retiros sin respaldo en minutos.", stack: ["OCR", "IA Forense", "Supabase", "Next.js"], highlight: true },
-              { icon: "🏃", tag: "Nuevo", title: "PaceAI — Coaching de Running con IA", desc: "Plataforma de entrenamiento personalizado que genera planes periodizados según metodología profesional, con zonas de ritmo calculadas, mapas de circuitos reales en Buenos Aires y chat directo con coach.", stack: ["React", "Firebase", "LLMs", "Leaflet"], highlight: true },
+              { icon: "⚡", tag: "Core", title: "Data Engineering & Pipelines", desc: "Diseño e implementación de arquitecturas medallón, ETL/ELT y warehouses en AWS Redshift, BigQuery y Snowflake. Eliminamos deuda técnica y reducimos costos de cómputo hasta 70%.", stack: ["Airflow", "dbt", "Python", "SQL"], highlight: false, link: null },
+              { icon: "🤖", tag: "IA Aplicada", title: "Microagentes & Automatización IA", desc: "Diseño de agentes autónomos con N8N y LLMs para automatización de procesos complejos: auditoría documental, síntesis de datos, detección de anomalías y orquestación de workflows.", stack: ["N8N", "LLMs", "Python", "OCR"], highlight: false, link: null },
+              { icon: "☁️", tag: "Cloud", title: "Arquitectura Cloud & MLOps", desc: "Infraestructura robusta en AWS y GCP con CI/CD para datos, gobernanza end-to-end y monitoreo continuo. Desde startup hasta escala enterprise.", stack: ["AWS", "GCP", "Terraform", "Docker"], highlight: false, link: null },
+              { icon: "🏦", tag: "Fintech", title: "Fintech & Cumplimiento BCRA", desc: "Asesoramiento en PSP, integración KYC/AML, onboarding digital y gestión de cuentas recaudadoras. Navegamos el ecosistema regulatorio argentino.", stack: ["KYC/AML", "APIs Financieras", "Nosis", "Comafi"], highlight: false, link: null },
+              { icon: "📊", tag: "Analytics", title: "BI & Analytics Engineering", desc: "Capa semántica con métricas unificadas, modelos dbt, dashboards ejecutivos y OKRs. Tu equipo de negocio toma decisiones con datos en los que puede confiar.", stack: ["Looker", "Power BI", "dbt", "LightGBM"], highlight: false, link: null },
+              { icon: "🔍", tag: "Nuevo", title: "AuditIA — Auditoría Forense IA", desc: "Sistema de auditoría automatizada con validación cruzada triple: Balance vs. Facturas OCR/CAE vs. Extractos Bancarios. Detecta fraude, pagos duplicados y retiros sin respaldo en minutos.", stack: ["OCR", "IA Forense", "Supabase", "Next.js"], highlight: true, link: auditiaDemo },
+              { icon: "🏃", tag: "Nuevo", title: "PaceAI — Coaching de Running con IA", desc: "Plataforma de entrenamiento personalizado que genera planes periodizados según metodología profesional, con zonas de ritmo calculadas, mapas de circuitos reales en Buenos Aires y chat directo con coach.", stack: ["React", "Firebase", "LLMs", "Leaflet"], highlight: true, link: paceia },
+              { icon: "🎯", tag: "Nuevo", title: "JobTrack AI — Seguimiento de Búsqueda Laboral", desc: "Plataforma para organizar toda tu búsqueda de empleo en un solo lugar: postulaciones, entrevistas y seguimiento de procesos, con asistencia de IA para no perder el hilo de ningún proceso.", stack: ["React", "IA Aplicada", "Automatización"], highlight: true, link: jobtrack },
+              { icon: "🚀", tag: "Nuevo", title: "Incubadora AI — Validación de Proyectos con IA", desc: "Herramienta para armar y validar ideas de startups o proyectos nuevos con asistencia de IA, desde la hipótesis inicial hasta un plan estructurado y accionable.", stack: ["React", "LLMs", "Product Discovery"], highlight: true, link: incubadora },
             ].map((s, i) => (
               <div
                 key={i}
                 className={[
-                  "rounded-2xl p-6 border transition-all hover:scale-[1.02] cursor-default",
+                  "rounded-2xl p-6 border transition-all hover:scale-[1.02]",
                   s.highlight
                     ? "bg-cyan-500/10 border-cyan-500/50 hover:border-cyan-400"
                     : "bg-slate-900/50 border-slate-800 hover:border-slate-600",
+                  s.link ? "cursor-pointer" : "cursor-default",
                 ].join(" ")}
+                onClick={() => { if (s.link) window.open(s.link, "_blank", "noreferrer"); }}
               >
                 <div className="flex items-start justify-between mb-4">
                   <span className="text-3xl">{s.icon}</span>
@@ -167,11 +174,16 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-lg font-bold text-white mb-3">{s.title}</h3>
                 <p className="text-slate-400 text-sm leading-relaxed mb-4">{s.desc}</p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mb-4">
                   {s.stack.map((t) => (
                     <span key={t} className="text-xs bg-slate-800/80 text-slate-300 px-2 py-1 rounded-md">{t}</span>
                   ))}
                 </div>
+                {s.link && (
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400">
+                    Ver en vivo <span>→</span>
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -207,15 +219,26 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-              <a
-                href={whatsapp}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 bg-cyan-500 text-slate-950 font-bold px-8 py-4 rounded-xl hover:bg-cyan-400 transition-all hover:scale-105"
-              >
-                💬 Quiero una demo
-                <span>→</span>
-              </a>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={whatsapp}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 bg-cyan-500 text-slate-950 font-bold px-8 py-4 rounded-xl hover:bg-cyan-400 transition-all hover:scale-105"
+                >
+                  💬 Quiero una demo
+                  <span>→</span>
+                </a>
+                <a
+                  href={auditiaDemo}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 bg-slate-900 border border-slate-700 text-white font-semibold px-8 py-4 rounded-xl hover:border-slate-500 transition-all"
+                >
+                  Ver panel en vivo
+                  <span>→</span>
+                </a>
+              </div>
             </div>
 
             {/* DASHBOARD MOCKUP */}
