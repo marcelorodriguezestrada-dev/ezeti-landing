@@ -1,14 +1,17 @@
-"use client";
+﻿"use client";
 import React, { useEffect, useState } from "react";
 
 export default function LandingPage() {
-  const whatsapp = "https://wa.me/5491167076678?text=Hola%20Marcelo%2C%20quiero%20un%20diagn%C3%B3stico%20gratuito%20de%20mi%20infraestructura";
+  const whatsapp = "https://wa.me/5491167076678?text=Hola%20EZETI%2C%20quiero%20conversar%20sobre%20una%20soluci%C3%B3n%20de%20IA%20para%20mi%20empresa";
   const linkedin = "https://www.linkedin.com/in/marcelo-rodriguez-estrada";
   const email = "mailto:marcelo.rodriguez.estrada@gmail.com";
   const paceia = "https://paceia.ezeti.pro";
   const auditiaDemo = "https://auditia-consorcial.onrender.com/overview";
   const jobtrack = "https://jobtrack-ai-frontend.onrender.com/";
   const incubadora = "https://incubadora-ai-frontend.onrender.com/";
+  const semillai = "https://semillai-c0y1.onrender.com/dashboard";
+  const consultorio = "https://consultorio-dra-veronica.vercel.app/";
+  const tierraviva = "https://tierraviva.ezeti.pro/";
 
   const [count1, setCount1] = useState(0);
   const [count2, setCount2] = useState(0);
@@ -29,542 +32,335 @@ export default function LandingPage() {
         }
       }, 16);
     };
-    animate(setCount1, 70, 1500);
+    animate(setCount1, 70, 1400);
     animate(setCount2, 15, 1200);
     animate(setCount3, 19, 1600);
     animate(setCount4, 2000, 1800);
   }, []);
 
-  return (
-    <div className="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+  const services = [
+    {
+      icon: "⚡",
+      title: "Arquitectura de datos y automatización",
+      desc: "Diseñamos infraestructuras confiables para mover información, integrar sistemas y dejar procesos listos para crecer.",
+      tags: ["ETL/ELT", "Data Platforms", "Orquestación"],
+      link: null,
+    },
+    {
+      icon: "🤖",
+      title: "Agentes IA y workflows inteligentes",
+      desc: "Creamos asistentes, automations y micro-agentes que reducen fricción, aceleran decisiones y liberan tiempo al equipo.",
+      tags: ["N8N", "LLMs", "OCR", "Automatización"],
+      link: null,
+    },
+    {
+      icon: "📈",
+      title: "Estrategia comercial y producto",
+      desc: "Transformamos ideas en productos, experiencias y campañas con una lógica de crecimiento real, medible y escalable.",
+      tags: ["Product Discovery", "Marketing IA", "Roadmaps"],
+      link: null,
+    },
+  ];
 
-      {/* HEADER */}
-      <header className="border-b border-slate-800/50 sticky top-0 bg-slate-950/90 backdrop-blur-xl z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-cyan-500 rounded-lg flex items-center justify-center">
-              <span className="text-slate-950 font-black text-sm">E</span>
+  const products = [
+    { title: "AuditIA", desc: "Auditoría forense con IA para detectar irregularidades, fraude y pagos sospechosos en minutos.", link: auditiaDemo, badge: "Fintech & Consorcios" },
+    { title: "PaceAI", desc: "Plataforma de coaching deportivo con planes personalizados, métricas y rutinas generadas por IA.", link: paceia, badge: "Product + IA" },
+    { title: "SemillAI", desc: "Asistente para validar ideas, construir roadmaps y convertir una intuición en una propuesta accionable.", link: semillai, badge: "Ideación & estrategia" },
+    { title: "Consultorio Dra. Verónica", desc: "Experiencia digital más clara y cercana para mejorar la comunicación con pacientes y reforzar la marca.", link: consultorio, badge: "Servicios & marca" },
+    { title: "Tierra Viva", desc: "Experiencia de e-commerce con IA para vender productos y escalar la conversión sin perder la identidad del negocio.", link: tierraviva, badge: "E-commerce" },
+    { title: "Incubadora AI", desc: "Herramienta para descubrir hipótesis, oportunidades y caminos de negocio que se pueden desarrollar con IA.", link: incubadora, badge: "Innovación" },
+  ];
+
+  const methodology = [
+    { step: "01", title: "Descubrimos el problema real", desc: "No arrancamos con tecnología; empezamos con la fricción, la oportunidad y el impacto de negocio." },
+    { step: "02", title: "Diseñamos la solución con IA", desc: "Armamos un sistema claro, útil y escalable, pensado para operar en el día a día del cliente." },
+    { step: "03", title: "Lo convertimos en producto", desc: "De la idea a la experiencia, con un roadmap fuerte y una ejecución que genera confianza desde el inicio." },
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 antialiased">
+      <header className="sticky top-0 z-50 border-b border-slate-800/60 bg-slate-950/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+          <a href="#top" className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500 text-sm font-black text-slate-950">
+              E
             </div>
             <span className="text-lg font-mono font-bold text-white">
               ezeti<span className="text-cyan-400">.pro</span>
             </span>
-          </div>
-          <nav className="hidden md:flex items-center gap-8 text-sm text-slate-400">
-            <a href="#servicios" className="hover:text-white transition-colors">Servicios</a>
-            <a href="#casosdeuso" className="hover:text-white transition-colors">Casos de Uso</a>
-            <a href="#paceia" className="hover:text-white transition-colors">PaceAI</a>
-            <a href="#stack" className="hover:text-white transition-colors">Stack</a>
-            <a href="#nosotros" className="hover:text-white transition-colors">Nosotros</a>
+          </a>
+          <nav className="hidden items-center gap-8 text-sm text-slate-400 md:flex">
+            <a href="#servicios" className="transition-colors hover:text-white">Servicios</a>
+            <a href="#productos" className="transition-colors hover:text-white">Productos</a>
+            <a href="#metodologia" className="transition-colors hover:text-white">Metodología</a>
+            <a href="#casosdeuso" className="transition-colors hover:text-white">Casos</a>
+            <a href="#nosotros" className="transition-colors hover:text-white">Nosotros</a>
           </nav>
           <a
             href={whatsapp}
             target="_blank"
             rel="noreferrer"
-            className="bg-cyan-500 text-slate-950 text-sm font-semibold px-5 py-2 rounded-lg hover:bg-cyan-400 transition-all hover:scale-105 flex items-center gap-2"
+            className="flex items-center gap-2 rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 transition-all hover:scale-105 hover:bg-cyan-400"
           >
-            💬 Agendar por WhatsApp
+            💬 Hablemos
           </a>
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="relative overflow-hidden pt-24 pb-32">
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{ backgroundImage: "radial-gradient(circle at 20% 50%, #06b6d4 0%, transparent 50%), radial-gradient(circle at 80% 20%, #6366f1 0%, transparent 40%)" }}
-        />
-        <div
-          className="absolute inset-0 opacity-5"
-          style={{ backgroundImage: "linear-gradient(to right, #cbd5e1 1px, transparent 1px), linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)", backgroundSize: "4rem 4rem" }}
-        />
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <div className="inline-flex items-center gap-2 bg-slate-900/80 border border-cyan-500/30 px-4 py-2 rounded-full text-xs font-mono text-cyan-400 mb-8">
-            <span className="w-2 h-2 rounded-full bg-cyan-400" style={{ animation: "pulse 2s infinite" }} />
-            Senior Data & ML Engineer · Fintech Strategist · IA Aplicada
-          </div>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white mb-6 leading-none">
-            Transformamos{" "}
-            <span className="text-transparent" style={{ WebkitTextStroke: "1px #06b6d4" }}>
-              datos complejos
-            </span>
-            <br />
-            en decisiones <span className="text-cyan-400">inteligentes</span>
-          </h1>
-          <p className="text-xl text-slate-400 max-w-3xl mb-12 leading-relaxed">
-            Arquitectura de datos de clase enterprise, microagentes de IA y pipelines deterministas para
-            operaciones críticas en Fintech, Banca y Scale-ups.{" "}
-            <span className="text-white font-medium">15 años</span> construyendo infraestructura que no falla.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <a
-              href="#casosdeuso"
-              className="inline-flex items-center justify-center gap-2 bg-cyan-500 text-slate-950 font-bold px-8 py-4 rounded-xl hover:bg-cyan-400 transition-all hover:scale-105 text-base"
-            >
-              Ver AuditIA en acción
-              <span>→</span>
-            </a>
-            <a
-              href={whatsapp}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 text-white font-semibold px-8 py-4 rounded-xl hover:border-slate-500 transition-all text-base"
-            >
-              💬 Diagnóstico gratuito
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* MÉTRICAS */}
-      <section className="border-y border-slate-800/50 bg-slate-900/30">
-        <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { value: count1 + "%", label: "Reducción en tiempos de procesamiento ETL", sub: "Mercado Libre · Accenture" },
-            { value: count2 + "+", label: "Años de experiencia en Data Engineering", sub: "Fintech · Banca · Insurtech" },
-            { value: "$" + count3 + "M+", label: "En activos auditados con IA", sub: "AuditIA Consorcial" },
-            { value: "$" + count4, label: "USD ahorro mensual en cómputo cloud", sub: "Optimización FinOps" },
-          ].map((m, i) => (
-            <div key={i} className="text-center">
-              <div className="text-4xl font-black text-cyan-400 mb-1">{m.value}</div>
-              <div className="text-sm text-white font-medium mb-1">{m.label}</div>
-              <div className="text-xs text-slate-500">{m.sub}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* SERVICIOS */}
-      <section id="servicios" className="py-28">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-16">
-            <span className="text-xs font-mono text-cyan-500 uppercase tracking-widest">Servicios</span>
-            <h2 className="text-4xl font-black text-white mt-3 mb-4">Lo que construimos juntos</h2>
-            <p className="text-slate-400 max-w-2xl">
-              Desde la arquitectura base hasta agentes autónomos en producción. Cada engagement entrega resultados medibles desde la semana uno.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { icon: "⚡", tag: "Core", title: "Data Engineering & Pipelines", desc: "Diseño e implementación de arquitecturas medallón, ETL/ELT y warehouses en AWS Redshift, BigQuery y Snowflake. Eliminamos deuda técnica y reducimos costos de cómputo hasta 70%.", stack: ["Airflow", "dbt", "Python", "SQL"], highlight: false, link: null },
-              { icon: "🤖", tag: "IA Aplicada", title: "Microagentes & Automatización IA", desc: "Diseño de agentes autónomos con N8N y LLMs para automatización de procesos complejos: auditoría documental, síntesis de datos, detección de anomalías y orquestación de workflows.", stack: ["N8N", "LLMs", "Python", "OCR"], highlight: false, link: null },
-              { icon: "☁️", tag: "Cloud", title: "Arquitectura Cloud & MLOps", desc: "Infraestructura robusta en AWS y GCP con CI/CD para datos, gobernanza end-to-end y monitoreo continuo. Desde startup hasta escala enterprise.", stack: ["AWS", "GCP", "Terraform", "Docker"], highlight: false, link: null },
-              { icon: "🏦", tag: "Fintech", title: "Fintech & Cumplimiento BCRA", desc: "Asesoramiento en PSP, integración KYC/AML, onboarding digital y gestión de cuentas recaudadoras. Navegamos el ecosistema regulatorio argentino.", stack: ["KYC/AML", "APIs Financieras", "Nosis", "Comafi"], highlight: false, link: null },
-              { icon: "📊", tag: "Analytics", title: "BI & Analytics Engineering", desc: "Capa semántica con métricas unificadas, modelos dbt, dashboards ejecutivos y OKRs. Tu equipo de negocio toma decisiones con datos en los que puede confiar.", stack: ["Looker", "Power BI", "dbt", "LightGBM"], highlight: false, link: null },
-              { icon: "🔍", tag: "Nuevo", title: "AuditIA — Auditoría Forense IA", desc: "Sistema de auditoría automatizada con validación cruzada triple: Balance vs. Facturas OCR/CAE vs. Extractos Bancarios. Detecta fraude, pagos duplicados y retiros sin respaldo en minutos.", stack: ["OCR", "IA Forense", "Supabase", "Next.js"], highlight: true, link: auditiaDemo },
-              { icon: "🏃", tag: "Nuevo", title: "PaceAI — Coaching de Running con IA", desc: "Plataforma de entrenamiento personalizado que genera planes periodizados según metodología profesional, con zonas de ritmo calculadas, mapas de circuitos reales en Buenos Aires y chat directo con coach.", stack: ["React", "Firebase", "LLMs", "Leaflet"], highlight: true, link: paceia },
-              { icon: "🎯", tag: "Nuevo", title: "JobTrack AI — Seguimiento de Búsqueda Laboral", desc: "Plataforma para organizar toda tu búsqueda de empleo en un solo lugar: postulaciones, entrevistas y seguimiento de procesos, con asistencia de IA para no perder el hilo de ningún proceso.", stack: ["React", "IA Aplicada", "Automatización"], highlight: true, link: jobtrack },
-              { icon: "🚀", tag: "Nuevo", title: "Incubadora AI — Validación de Proyectos con IA", desc: "Herramienta para armar y validar ideas de startups o proyectos nuevos con asistencia de IA, desde la hipótesis inicial hasta un plan estructurado y accionable.", stack: ["React", "LLMs", "Product Discovery"], highlight: true, link: incubadora },
-            ].map((s, i) => (
-              <div
-                key={i}
-                className={[
-                  "rounded-2xl p-6 border transition-all hover:scale-[1.02]",
-                  s.highlight
-                    ? "bg-cyan-500/10 border-cyan-500/50 hover:border-cyan-400"
-                    : "bg-slate-900/50 border-slate-800 hover:border-slate-600",
-                  s.link ? "cursor-pointer" : "cursor-default",
-                ].join(" ")}
-                onClick={() => { if (s.link) window.open(s.link, "_blank", "noreferrer"); }}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <span className="text-3xl">{s.icon}</span>
-                  <span className={["text-xs font-mono px-2 py-1 rounded-full", s.highlight ? "bg-cyan-500/20 text-cyan-400" : "bg-slate-800 text-slate-400"].join(" ")}>
-                    {s.tag}
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-3">{s.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed mb-4">{s.desc}</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {s.stack.map((t) => (
-                    <span key={t} className="text-xs bg-slate-800/80 text-slate-300 px-2 py-1 rounded-md">{t}</span>
-                  ))}
-                </div>
-                {s.link && (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400">
-                    Ver en vivo <span>→</span>
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CASO DE USO: AUDITIA */}
-      <section id="casosdeuso" className="py-28 bg-slate-900/40 border-y border-slate-800/50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-4">
-            <span className="text-xs font-mono text-cyan-500 uppercase tracking-widest">Caso de Éxito · IA en Producción</span>
-          </div>
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <main id="top">
+        <section className="relative overflow-hidden px-6 py-24 sm:py-28 lg:py-32">
+          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 15% 20%, #06b6d4 0%, transparent 40%), radial-gradient(circle at 85% 20%, #6366f1 0%, transparent 35%)" }} />
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px)", backgroundSize: "3.5rem 3.5rem" }} />
+          <div className="relative mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
-              <h2 className="text-4xl font-black text-white mb-6 leading-tight">
-                AuditIA Consorcial —<br />
-                <span className="text-cyan-400">Fraude detectado en minutos,</span>
-                <br />no en meses
-              </h2>
-              <p className="text-slate-400 mb-8 leading-relaxed">
-                Desarrollamos un sistema de auditoría forense con IA que procesa años de registros financieros en minutos. Lo que antes requería semanas de trabajo contable manual, hoy se resuelve automáticamente con validación cruzada triple.
-              </p>
-              <div className="space-y-4 mb-10">
-                {[
-                  { label: "Irregularidades detectadas", value: "$19M+ ARS", color: "text-red-400" },
-                  { label: "Documentos procesados", value: "300+ páginas / minuto", color: "text-cyan-400" },
-                  { label: "Score de auditoría", value: "Automático · 0-100", color: "text-green-400" },
-                  { label: "Tipo de fraude detectado", value: "Pagos duplicados · Sin CAE · Facturación cruzada", color: "text-amber-400" },
-                ].map((r, i) => (
-                  <div key={i} className="flex items-center justify-between py-3 border-b border-slate-800/50">
-                    <span className="text-slate-400 text-sm">{r.label}</span>
-                    <span className={["font-bold text-sm", r.color].join(" ")}>{r.value}</span>
-                  </div>
-                ))}
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-slate-900/80 px-4 py-2 text-xs font-mono uppercase tracking-[0.25em] text-cyan-400">
+                <span className="h-2 w-2 rounded-full bg-cyan-400" style={{ animation: "pulse 2s infinite" }} />
+                EZETI · IA aplicada para negocios reales
               </div>
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href={whatsapp}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 bg-cyan-500 text-slate-950 font-bold px-8 py-4 rounded-xl hover:bg-cyan-400 transition-all hover:scale-105"
-                >
-                  💬 Quiero una demo
+              <h1 className="mb-6 text-4xl font-black leading-[0.95] text-white sm:text-5xl lg:text-7xl">
+                Creamos productos,
+                <br />
+                experiencias y <span className="text-cyan-400">sistemas de crecimiento</span>
+                <br />
+                con IA de verdad.
+              </h1>
+              <p className="mb-8 max-w-2xl text-lg leading-8 text-slate-400 sm:text-xl">
+                No vendemos tecnología por venderla. Diseñamos soluciones que convierten ideas en productos, procesos y resultados comprobables para empresas que quieren avanzar con velocidad y criterio.
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <a href="#productos" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-cyan-500 px-7 py-4 font-semibold text-slate-950 transition-all hover:scale-105 hover:bg-cyan-400">
+                  Ver ejemplos reales
                   <span>→</span>
                 </a>
-                <a
-                  href={auditiaDemo}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 bg-slate-900 border border-slate-700 text-white font-semibold px-8 py-4 rounded-xl hover:border-slate-500 transition-all"
-                >
-                  Ver panel en vivo
-                  <span>→</span>
+                <a href={whatsapp} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-7 py-4 font-semibold text-white transition-all hover:border-slate-500">
+                  Agendar una conversación
                 </a>
               </div>
             </div>
 
-            {/* DASHBOARD MOCKUP */}
-            <div className="bg-slate-950 border border-slate-700 rounded-2xl overflow-hidden shadow-2xl">
-              <div className="border-b border-slate-800 px-4 py-3 flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="ml-3 text-xs font-mono text-slate-500">auditia.consorcial — Octubre 2025</span>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  {[
-                    { label: "Total gastos", value: "$4.941.610", sub: "Liquidación mensual", red: false },
-                    { label: "Score auditoría", value: "20/100", sub: "🔴 Crítico", red: true },
-                    { label: "Alertas activas", value: "5", sub: "4 alta · 1 media", red: false },
-                    { label: "Sin factura", value: "$1.490.319", sub: "Monto en riesgo", red: true },
-                  ].map((c, i) => (
-                    <div key={i} className={["rounded-xl p-3 border", c.red ? "bg-red-950/30 border-red-800/50" : "bg-slate-900 border-slate-800"].join(" ")}>
-                      <div className="text-xs text-slate-500 mb-1">{c.label}</div>
-                      <div className={["text-lg font-black", c.red ? "text-red-400" : "text-white"].join(" ")}>{c.value}</div>
-                      <div className="text-xs text-slate-500">{c.sub}</div>
-                    </div>
-                  ))}
+            <div className="relative">
+              <div className="absolute inset-0 -translate-y-4 rounded-[2rem] bg-cyan-500/20 blur-3xl" />
+              <div className="relative overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-900/80 shadow-[0_30px_80px_rgba(2,132,199,0.14)]">
+                <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-3">
+                  <div className="h-3 w-3 rounded-full bg-red-500" />
+                  <div className="h-3 w-3 rounded-full bg-yellow-500" />
+                  <div className="h-3 w-3 rounded-full bg-green-500" />
+                  <span className="ml-3 text-xs font-mono text-slate-500">ezeti.command / operating system</span>
                 </div>
-                <div className="space-y-2">
-                  {[
-                    { tipo: "ALTA", desc: "17 gastos sin factura ni débito bancario", monto: "$2.964" },
-                    { tipo: "ALTA", desc: "Personal representa 128% del gasto total", monto: "$1.500.697" },
-                    { tipo: "ALTA", desc: "Diferencia caja/banco detectada", monto: "$897.777" },
-                    { tipo: "MEDIA", desc: "1 factura sin débito bancario", monto: "—" },
-                  ].map((a, i) => (
-                    <div key={i} className="flex items-center gap-3 bg-slate-900/50 rounded-lg px-3 py-2 border border-slate-800/50">
-                      <span className={["text-xs font-mono font-bold px-2 py-0.5 rounded", a.tipo === "ALTA" ? "bg-red-950 text-red-400" : "bg-amber-950 text-amber-400"].join(" ")}>
-                        {a.tipo}
-                      </span>
-                      <span className="text-xs text-slate-300 flex-1">{a.desc}</span>
-                      <span className="text-xs font-mono text-slate-500">{a.monto}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CASO DE USO: PACEAI */}
-      <section id="paceia" className="py-28">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-4">
-            <span className="text-xs font-mono text-cyan-500 uppercase tracking-widest">Caso de Éxito · Producto en Producción</span>
-          </div>
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-4xl font-black text-white mb-6 leading-tight">
-                PaceAI —<br />
-                <span className="text-cyan-400">Un coach de running</span>
-                <br />que nunca duerme
-              </h2>
-              <p className="text-slate-400 mb-8 leading-relaxed">
-                Diseñé y desarrollé una plataforma completa de coaching deportivo con IA: planes de entrenamiento periodizados,
-                cálculo automático de zonas de ritmo, mapas de circuitos reales por barrio y chat directo con coach humano.
-                De la arquitectura de datos al producto que un corredor usa cada semana.
-              </p>
-              <div className="space-y-4 mb-10">
-                {[
-                  { label: "Carreras integradas", value: "6+ en Buenos Aires", color: "text-cyan-400" },
-                  { label: "Planes generados", value: "Periodización automática por IA", color: "text-green-400" },
-                  { label: "Zonas de entrenamiento", value: "8 circuitos con mapas reales", color: "text-amber-400" },
-                  { label: "Modelo de negocio", value: "Freemium · 3 niveles de suscripción", color: "text-cyan-400" },
-                ].map((r, i) => (
-                  <div key={i} className="flex items-center justify-between py-3 border-b border-slate-800/50">
-                    <span className="text-slate-400 text-sm">{r.label}</span>
-                    <span className={["font-bold text-sm", r.color].join(" ")}>{r.value}</span>
+                <div className="p-6 sm:p-8">
+                  <div className="mb-5 rounded-2xl border border-cyan-500/20 bg-cyan-500/10 p-4">
+                    <div className="text-xs font-mono uppercase tracking-[0.25em] text-cyan-400">Motor de crecimiento</div>
+                    <div className="mt-2 text-2xl font-black text-white">IA + estrategia + producto + ejecución</div>
                   </div>
-                ))}
-              </div>
-              <a
-                href={paceia}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 bg-cyan-500 text-slate-950 font-bold px-8 py-4 rounded-xl hover:bg-cyan-400 transition-all hover:scale-105"
-              >
-                🏃 Ver PaceAI en vivo
-                <span>→</span>
-              </a>
-            </div>
-
-            {/* DASHBOARD MOCKUP */}
-            <div className="bg-slate-950 border border-slate-700 rounded-2xl overflow-hidden shadow-2xl">
-              <div className="border-b border-slate-800 px-4 py-3 flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="ml-3 text-xs font-mono text-slate-500">paceia.ezeti.pro — Plan Media Maratón</span>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  {[
-                    { label: "Semanas de plan", value: "16", sub: "Macrociclo completo" },
-                    { label: "Fase actual", value: "Específica", sub: "🟢 En curso" },
-                    { label: "Volumen semanal", value: "58 km", sub: "Progresión +8%" },
-                    { label: "Días para carrera", value: "34", sub: "⚡ Sharpening pronto" },
-                  ].map((c, i) => (
-                    <div key={i} className="rounded-xl p-3 border bg-slate-900 border-slate-800">
-                      <div className="text-xs text-slate-500 mb-1">{c.label}</div>
-                      <div className="text-lg font-black text-white">{c.value}</div>
-                      <div className="text-xs text-slate-500">{c.sub}</div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                      <div className="text-sm text-slate-400">Diagnóstico rápido</div>
+                      <div className="mt-2 text-3xl font-black text-cyan-400">24h</div>
+                      <div className="text-sm text-slate-500">para priorizar la próxima mejora</div>
                     </div>
-                  ))}
-                </div>
-                <div className="space-y-2">
-                  {[
-                    { dia: "MAR", desc: "Calidad — Intervalos 1000m", dist: "10km" },
-                    { dia: "JUE", desc: "Calidad — Tempo run", dist: "10km" },
-                    { dia: "SAB", desc: "Fondo largo progresivo", dist: "22km" },
-                    { dia: "DOM", desc: "Descanso total + elongación", dist: "—" },
-                  ].map((a, i) => (
-                    <div key={i} className="flex items-center gap-3 bg-slate-900/50 rounded-lg px-3 py-2 border border-slate-800/50">
-                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-400">
-                        {a.dia}
-                      </span>
-                      <span className="text-xs text-slate-300 flex-1">{a.desc}</span>
-                      <span className="text-xs font-mono text-slate-500">{a.dist}</span>
+                    <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                      <div className="text-sm text-slate-400">Roadmap de implementación</div>
+                      <div className="mt-2 text-3xl font-black text-cyan-400">3 etapas</div>
+                      <div className="text-sm text-slate-500">de descubrimiento a escala</div>
                     </div>
-                  ))}
+                  </div>
+                  <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                    <div className="flex items-center justify-between text-sm text-slate-400">
+                      <span>Proyectos activos</span>
+                      <span className="font-semibold text-white">+12</span>
+                    </div>
+                    <div className="mt-3 h-2 rounded-full bg-slate-800">
+                      <div className="h-2 w-[78%] rounded-full bg-gradient-to-r from-cyan-500 to-blue-500" />
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                      {['Marketing IA', 'Operaciones', 'Productos', 'Data'].map((item) => (
+                        <span key={item} className="rounded-full border border-slate-700 px-2.5 py-1 text-slate-300">{item}</span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CÓMO FUNCIONA AUDITIA */}
-      <section className="py-28">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="text-xs font-mono text-cyan-500 uppercase tracking-widest">Tecnología</span>
-            <h2 className="text-4xl font-black text-white mt-3">Validación cruzada triple con IA</h2>
-            <p className="text-slate-400 mt-4 max-w-2xl mx-auto">Tres fuentes de datos. Un motor de cruce. Fraude imposible de esconder.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <section className="border-y border-slate-800/70 bg-slate-900/40">
+          <div className="mx-auto grid max-w-7xl gap-6 px-6 py-12 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { num: "01", title: "Liquidación de Expensas", desc: "OCR + parser determinístico extrae todos los rubros del formato MIS EXPENSAS (Ley 941 GCBA). Identifica totales, proveedores y CAEs.", icon: "📄" },
-              { num: "02", title: "Facturas & Comprobantes", desc: "Validación automática de CAE en AFIP/ARCA, detección de CUITs falsos, facturas de otros consorcios y comprobantes sin respaldo fiscal.", icon: "🧾" },
-              { num: "03", title: "Extracto Bancario", desc: "Parser específico para Banco Ciudad. Clasifica débitos, créditos e impuestos. Detecta pagos sin factura y diferencias entre lo liquidado y lo pagado.", icon: "🏦" },
-            ].map((p, i) => (
-              <div key={i} className="relative bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-                <div className="text-4xl mb-4">{p.icon}</div>
-                <div className="text-xs font-mono text-cyan-500 mb-2">{p.num}</div>
-                <h3 className="text-lg font-bold text-white mb-3">{p.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{p.desc}</p>
-                {i < 2 && (
-                  <div className="hidden md:block absolute -right-4 top-1/2 -translate-y-1/2 text-cyan-500 text-2xl z-10">→</div>
-                )}
+              { value: count1 + "%", label: "Reducción en tiempos de procesamiento", sub: "Data & automatización" },
+              { value: count2 + "+", label: "Años de experiencia aplicada", sub: "Fintech · Banca · Product" },
+              { value: "$" + count3 + "M+", label: "En activos auditados con IA", sub: "Fraude & control" },
+              { value: "$" + count4, label: "Ahorro mensual en cloud", sub: "Optimización FinOps" },
+            ].map((item, index) => (
+              <div key={index} className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5 text-center">
+                <div className="text-3xl font-black text-cyan-400">{item.value}</div>
+                <div className="mt-2 text-sm font-semibold text-white">{item.label}</div>
+                <div className="mt-1 text-xs text-slate-500">{item.sub}</div>
               </div>
             ))}
           </div>
-          <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-2xl p-6 text-center">
-            <p className="text-cyan-300 font-semibold text-lg">
-              Resultado: Score 0–100 · Alertas priorizadas · Informe para propietarios · Informe técnico completo
-            </p>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* STACK */}
-      <section id="stack" className="py-28 bg-slate-900/30 border-y border-slate-800/50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="text-xs font-mono text-cyan-500 uppercase tracking-widest">Stack Tecnológico</span>
-            <h2 className="text-4xl font-black text-white mt-3">Herramientas de producción real</h2>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { cat: "Inteligencia Artificial", items: ["Microagentes autónomos", "LightGBM", "Redes neuronales", "Detección anomalías", "OCR avanzado", "N8N Flows"] },
-              { cat: "Data Engineering", items: ["Apache Airflow", "dbt", "ETL/ELT", "Star Schema", "CI/CD datos", "Modelado dimensional"] },
-              { cat: "Cloud & DevOps", items: ["AWS S3 · Redshift", "GCP BigQuery", "Dataflow", "Data Catalog", "Microservicios", "Infraestructura código"] },
-              { cat: "BI & Fintech", items: ["Looker · Power BI", "KYC/AML", "APIs BCRA/PSP", "Trading algorítmico", "QuantConnect", "OKRs ejecutivos"] },
-            ].map((g, i) => (
-              <div key={i} className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-                <h3 className="text-sm font-bold text-cyan-400 mb-4 uppercase tracking-wide">{g.cat}</h3>
-                <ul className="space-y-2">
-                  {g.items.map((item) => (
-                    <li key={item} className="flex items-center gap-2 text-sm text-slate-300">
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 flex-shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* EXPERIENCIA */}
-      <section id="nosotros" className="py-28">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
-            <div>
-              <span className="text-xs font-mono text-cyan-500 uppercase tracking-widest">Quién está detrás</span>
-              <h2 className="text-4xl font-black text-white mt-3 mb-6">Marcelo Rodriguez Estrada</h2>
-              <p className="text-slate-400 leading-relaxed mb-6">
-                Senior Data & ML Engineer con más de 15 años en la intersección de Fintech, Arquitectura Cloud e Inteligencia Artificial. Doble Maestría en Data Mining (UBA) y Finanzas (UTDT).
-              </p>
-              <p className="text-slate-400 leading-relaxed mb-8">
-                Construí ecosistemas de datos para Mercado Libre (vía Accenture), KAVAK, MetLife y Telecom. Hoy dirijo EZETI, donde aplicamos IA a problemas reales con impacto directo en el bottom line.
-              </p>
-              <div className="flex flex-wrap gap-3 mb-8">
-                {["MSc. Data Mining · UBA", "MSc. Finanzas · UTDT", "Inglés C1+ Profesional"].map((b) => (
-                  <span key={b} className="text-xs bg-slate-800 border border-slate-700 text-slate-300 px-3 py-1.5 rounded-full">{b}</span>
-                ))}
-              </div>
-              <div className="flex gap-3 flex-wrap">
-                <a
-                  href={linkedin}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-600 text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
-                >
-                  🔗 LinkedIn
-                </a>
-                <a
-                  href={whatsapp}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
-                >
-                  💬 WhatsApp
-                </a>
-                <a
-                  href={email}
-                  className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
-                >
-                  ✉️ Email
-                </a>
-              </div>
+        <section id="servicios" className="px-6 py-24">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-12 max-w-3xl">
+              <span className="text-xs font-mono uppercase tracking-[0.3em] text-cyan-500">Servicios</span>
+              <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">Soluciones que conectan estrategia, producto y ejecución</h2>
+              <p className="mt-4 text-lg text-slate-400">Creamos los bloques que hacen crecer una empresa: datos, IA, experiencias y operaciones.</p>
             </div>
-            <div className="space-y-4">
-              {[
-                { empresa: "Mandala Tech · Mercado Libre", rol: "Ingeniero de Datos & Analytics", periodo: "Jul 2024 – Feb 2026", logro: "70% reducción tiempos ETL · USD $2.000/mes ahorro · Migración Redshift" },
-                { empresa: "UNIGO · Insurtech", rol: "Senior Data Engineer & BI Lead", periodo: "2018 – 2024", logro: "Arquitectura AWS desde cero · ML Lead Scoring · duplicó ventas diarias" },
-                { empresa: "Dacodes · KAVAK", rol: "Ingeniero de Datos", periodo: "2017", logro: "Modern Data Stack · Airflow + Looker · KPIs en tiempo real" },
-                { empresa: "Close-Up · Telecom · MSD", rol: "Consultor Senior BI", periodo: "2008 – 2015", logro: "Arquitectura QlikView enterprise · Oracle · múltiples clientes" },
-              ].map((e, i) => (
-                <div key={i} className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 hover:border-slate-600 transition-colors">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <div className="text-sm font-bold text-white">{e.empresa}</div>
-                      <div className="text-xs text-cyan-400">{e.rol}</div>
-                    </div>
-                    <span className="text-xs text-slate-500 font-mono whitespace-nowrap ml-4">{e.periodo}</span>
+            <div className="grid gap-6 lg:grid-cols-3">
+              {services.map((service, index) => (
+                <div key={index} className="rounded-[1.5rem] border border-slate-800 bg-slate-900/60 p-6 transition-all hover:-translate-y-1 hover:border-cyan-500/40">
+                  <div className="mb-5 text-3xl">{service.icon}</div>
+                  <h3 className="text-xl font-bold text-white">{service.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-slate-400">{service.desc}</p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {service.tags.map((tag) => (
+                      <span key={tag} className="rounded-full border border-slate-700 bg-slate-800/60 px-2.5 py-1 text-xs text-slate-300">{tag}</span>
+                    ))}
                   </div>
-                  <p className="text-xs text-slate-400">{e.logro}</p>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA FINAL */}
-      <section className="py-28 relative overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-30"
-          style={{ backgroundImage: "radial-gradient(circle at 50% 50%, #06b6d4 0%, transparent 60%)" }}
-        />
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <span className="text-xs font-mono text-cyan-500 uppercase tracking-widest">Empezá hoy</span>
-          <h2 className="text-5xl font-black text-white mt-4 mb-6">
-            ¿Tu infraestructura de datos<br />
-            <span className="text-cyan-400">está frenando el negocio?</span>
-          </h2>
-          <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
-            30 minutos de diagnóstico sin compromiso. Analizamos tu stack, identificamos los cuellos de botella y te mostramos el roadmap.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-            <a
-              href={whatsapp}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-cyan-500 text-slate-950 font-black px-10 py-5 rounded-2xl hover:bg-cyan-400 transition-all hover:scale-105 text-lg"
-            >
-              💬 Escribir por WhatsApp →
-            </a>
-            <a
-              href={linkedin}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-600 text-white font-semibold px-8 py-5 rounded-2xl transition-colors text-base"
-            >
-              🔗 LinkedIn
-            </a>
-          </div>
-          <p className="text-slate-600 text-sm">
-            marcelo.rodriguez.estrada@gmail.com · Belgrano, CABA · +54 11 6707-6678
-          </p>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-slate-800/50 py-10">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 bg-cyan-500 rounded-lg flex items-center justify-center">
-              <span className="text-slate-950 font-black text-xs">E</span>
+        <section id="productos" className="border-y border-slate-800/70 bg-slate-900/35 px-6 py-24">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-12 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-3xl">
+                <span className="text-xs font-mono uppercase tracking-[0.3em] text-cyan-500">Productos & experiencias</span>
+                <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">Una empresa que no solo habla de IA, sino que la pone en marcha</h2>
+              </div>
+              <p className="max-w-xl text-slate-400">Estos ejemplos muestran cómo la misma lógica se puede replicar para diferentes negocios: vender mejor, comunicar mejor, automatizar mejor y hacer crecer más rápido.</p>
             </div>
+            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="rounded-[2rem] border border-cyan-500/20 bg-gradient-to-br from-cyan-500/15 to-slate-900 p-8">
+                <div className="text-xs font-mono uppercase tracking-[0.3em] text-cyan-400">Plataforma EZETI</div>
+                <h3 className="mt-4 text-3xl font-black text-white">El valor no está en la herramienta, sino en el sistema completo</h3>
+                <p className="mt-4 text-lg leading-8 text-slate-300">Diseñamos desde el problema hasta la experiencia final: descubrimiento, producto, automatización, comunicación y métricas. Eso hace que una idea se convierta en un activo real para la empresa.</p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <a href={whatsapp} target="_blank" rel="noreferrer" className="rounded-full bg-cyan-500 px-5 py-2.5 font-semibold text-slate-950 transition hover:bg-cyan-400">Quiero una propuesta</a>
+                  <a href={linkedin} target="_blank" rel="noreferrer" className="rounded-full border border-slate-700 px-5 py-2.5 font-semibold text-white transition hover:border-slate-500">Ver perfil</a>
+                </div>
+              </div>
+              <div className="grid gap-4">
+                {products.map((product, index) => (
+                  <a key={product.title} href={product.link} target="_blank" rel="noreferrer" className="rounded-[1.25rem] border border-slate-800 bg-slate-950/70 p-5 transition-all hover:border-cyan-500/40 hover:bg-slate-900">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-xs font-mono uppercase tracking-[0.25em] text-cyan-400">{product.badge}</div>
+                        <h4 className="mt-2 text-lg font-bold text-white">{product.title}</h4>
+                      </div>
+                      <span className="text-sm text-slate-500">0{index + 1}</span>
+                    </div>
+                    <p className="mt-3 text-sm leading-7 text-slate-400">{product.desc}</p>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="metodologia" className="px-6 py-24">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-12 max-w-3xl">
+              <span className="text-xs font-mono uppercase tracking-[0.3em] text-cyan-500">Metodología</span>
+              <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">Una forma de trabajar que arma confianza desde el primer paso</h2>
+            </div>
+            <div className="grid gap-6 lg:grid-cols-3">
+              {methodology.map((item) => (
+                <div key={item.step} className="rounded-[1.5rem] border border-slate-800 bg-slate-900/70 p-6">
+                  <div className="mb-4 text-sm font-mono font-semibold uppercase tracking-[0.3em] text-cyan-400">{item.step}</div>
+                  <h3 className="text-xl font-bold text-white">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-slate-400">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="casosdeuso" className="border-t border-slate-800/70 bg-slate-900/35 px-6 py-24">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-12 max-w-3xl">
+              <span className="text-xs font-mono uppercase tracking-[0.3em] text-cyan-500">Casos de impacto</span>
+              <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">El mismo enfoque puede transformar una consulta, un producto o una operación completa</h2>
+            </div>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="rounded-[1.5rem] border border-slate-800 bg-slate-950/70 p-8">
+                <div className="text-xs font-mono uppercase tracking-[0.25em] text-cyan-400">AuditIA</div>
+                <h3 className="mt-3 text-2xl font-black text-white">Control, trazabilidad y detección temprana</h3>
+                <p className="mt-4 text-slate-400">Un sistema que cruza fuentes de información para detectar irregularidades de forma automática, con alertas y claridad para actuar.</p>
+                <a href={auditiaDemo} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cyan-400">Ver demo <span>→</span></a>
+              </div>
+              <div className="rounded-[1.5rem] border border-slate-800 bg-slate-950/70 p-8">
+                <div className="text-xs font-mono uppercase tracking-[0.25em] text-cyan-400">SemillAI</div>
+                <h3 className="mt-3 text-2xl font-black text-white">Ideas que se convierten en roadmap real</h3>
+                <p className="mt-4 text-slate-400">Herramienta para descubrir oportunidades, estructurar propuestas y avanzar con una visión más sólida desde el comienzo.</p>
+                <a href={semillai} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cyan-400">Abrir producto <span>→</span></a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="nosotros" className="px-6 py-24">
+          <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+            <div>
+              <span className="text-xs font-mono uppercase tracking-[0.3em] text-cyan-500">Sobre EZETI</span>
+              <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">Una empresa de ejecución, visión y diseño aplicado a la realidad del negocio</h2>
+              <p className="mt-5 text-lg leading-8 text-slate-400">Trabajamos en la intersección entre IA, datos, producto y operaciones para que las empresas puedan avanzar con menos ruido y más impacto.</p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a href={whatsapp} target="_blank" rel="noreferrer" className="rounded-full bg-cyan-500 px-5 py-2.5 font-semibold text-slate-950 transition hover:bg-cyan-400">Hablar con EZETI</a>
+                <a href={linkedin} target="_blank" rel="noreferrer" className="rounded-full border border-slate-700 px-5 py-2.5 font-semibold text-white transition hover:border-slate-500">LinkedIn</a>
+                <a href={email} className="rounded-full border border-slate-700 px-5 py-2.5 font-semibold text-white transition hover:border-slate-500">Email</a>
+              </div>
+            </div>
+            <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-8">
+              <div className="grid gap-4">
+                {[
+                  { title: "Pensamos en negocio, no solo en tecnología", desc: "Cada solución busca un resultado concreto: mayor eficiencia, más ventas, mejor experiencia o mejor control." },
+                  { title: "Construimos con criterio y velocidad", desc: "Trabajamos con una mirada clara para validar rápido, iterar con intención y evitar sobreingeniería." },
+                  { title: "La IA se vuelve útil cuando está integrada", desc: "No se trata de un demo aislado, sino de un sistema que se usa, se aprende y mejora con el tiempo." },
+                ].map((item) => (
+                  <div key={item.title} className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+                    <h3 className="text-lg font-bold text-white">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-7 text-slate-400">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-6 pb-24">
+          <div className="mx-auto max-w-5xl rounded-[2rem] border border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 to-slate-900 p-10 text-center">
+            <span className="text-xs font-mono uppercase tracking-[0.3em] text-cyan-400">Empezá hoy</span>
+            <h2 className="mt-4 text-3xl font-black text-white sm:text-4xl">Si una idea merece avanzar, la convertimos en una experiencia que se puede probar y escalar.</h2>
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-400">Hablemos de tu negocio, tu producto o tu proceso y veamos cómo la IA puede ayudar a que todo funcione mejor.</p>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <a href={whatsapp} target="_blank" rel="noreferrer" className="rounded-full bg-cyan-500 px-7 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400">Escribir por WhatsApp</a>
+              <a href={linkedin} target="_blank" rel="noreferrer" className="rounded-full border border-slate-700 px-7 py-3 font-semibold text-white transition hover:border-slate-500">Ver LinkedIn</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-slate-800/70 px-6 py-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-center text-sm text-slate-500 md:flex-row md:text-left">
+          <div className="flex items-center gap-3">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500 text-xs font-black text-slate-950">E</div>
             <span className="font-mono font-bold text-white">
               ezeti<span className="text-cyan-400">.pro</span>
             </span>
           </div>
-          <p className="text-xs text-slate-600">
-            2026 · EZETI · Senior Data Engineering & IA Aplicada · Buenos Aires, Argentina
-          </p>
-          <div className="flex gap-6 text-xs text-slate-500">
-            <a href="#servicios" className="hover:text-white transition-colors">Servicios</a>
-            <a href="#casosdeuso" className="hover:text-white transition-colors">AuditIA</a>
-            <a href="#paceia" className="hover:text-white transition-colors">PaceAI</a>
-            <a href={whatsapp} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">WhatsApp</a>
-            <a href={linkedin} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">LinkedIn</a>
+          <p>2026 · EZETI · IA aplicada para productos, operaciones y crecimiento</p>
+          <div className="flex flex-wrap gap-4">
+            <a href="#servicios" className="transition hover:text-white">Servicios</a>
+            <a href="#productos" className="transition hover:text-white">Productos</a>
+            <a href={whatsapp} target="_blank" rel="noreferrer" className="transition hover:text-white">WhatsApp</a>
           </div>
         </div>
       </footer>
-
     </div>
   );
 }
