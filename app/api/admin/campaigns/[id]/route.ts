@@ -9,7 +9,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     // Solo permitimos tocar estos campos desde el cliente -- nunca dejamos
     // que se pisen visitas/createdAt/slug por error desde el formulario.
     const permitido = [
-      "varianteElegida",
       "status",
       "destinoUrl",
       "likes",

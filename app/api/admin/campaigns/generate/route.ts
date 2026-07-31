@@ -2,18 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCampaignsCol } from "@/lib/firebaseAdmin";
 import { callGroq } from "@/lib/groq";
 import { generateSlug } from "@/lib/slug";
-import type { Plataforma, CampaignVariant } from "@/lib/types";
+import { buildUtmLinks } from "@/lib/utm";
+import type { Plataforma, CampaignPost, CalendarioItem } from "@/lib/types";
 
-const LIMITES_PLATAFORMA: Record<Plataforma, string> = {
-  instagram: "Caption de hasta 150 palabras, tono cercano, termina con una pregunta o CTA claro.",
-  linkedin: "Post de hasta 200 palabras, tono profesional pero humano, con un insight o aprendizaje, sin sonar a folleto de venta.",
-  facebook: "Texto de hasta 120 palabras, directo, con beneficio concreto y CTA simple.",
-  tiktok: "Guion corto de video de 30-45 segundos: gancho en las primeras 2 líneas, desarrollo breve, cierre con CTA. Formato guion, no caption.",
+const LINEAMIENTOS: Record<Plataforma, string> = {
+  instagram: "Mezclá formatos Feed, Story y Reel. Captions de hasta 150 palabras, tono cercano, cierre con pregunta o CTA claro.",
+  linkedin: "Posts de hasta 200 palabras, tono profesional pero humano, con un insight real, sin sonar a folleto de venta.",
+  facebook: "Textos directos de hasta 120 palabras, beneficio concreto, CTA simple.",
+  tiktok: "Guiones de video de 30-45 segundos: gancho en las primeras 2 líneas, desarrollo breve, cierre con CTA. Formato guion, no caption.",
 };
 
 export async function POST(req: NextRequest) {
   try {
-    const { producto, objetivo, publico, tono, plataforma, destinoUrl } = await req.json();
+    const { producto, objetivo, publico, tono, plataforma, destinoUrl, cantPosts } = await req.json();
 
     if (!producto || !objetivo || !plataforma || !destinoUrl) {
       return NextResponse.json(
@@ -22,22 +23,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const lineamiento = LIMITES_PLATAFORMA[plataforma as Plataforma] || LIMITES_PLATAFORMA.instagram;
+    const cantidad = Math.min(Math.max(Number(cantPosts) || 5, 1), 10);
+    const lineamiento = LINEAMIENTOS[plataforma as Plataforma] || LINEAMIENTOS.instagram;
 
-    const systemPrompt = `Sos copywriter senior especializado en marketing digital para redes sociales en LATAM/Argentina.
-Escribís copy que vende sin sonar a venta forzada: directo, con un beneficio concreto, cero relleno.
+    const systemPrompt = `Sos estratega de marketing digital y copywriter senior para redes sociales en LATAM/Argentina.
+Armás campañas completas y listas para ejecutar: no un solo post suelto, sino una secuencia coherente de posts que juntos cuentan una historia (ej: problema → enfoque → prueba/ejemplo → oferta → urgencia), sin repetir la misma idea con sinónimos.
 Nunca inventás cifras de resultados, testimonios o clientes que no te dieron.
-Devolvés ÚNICAMENTE JSON válido, sin texto ni markdown alrededor, con esta forma exacta:
+Devolvés ÚNICAMENTE JSON válido, sin texto ni markdown alrededor, con esta forma EXACTA:
 {
-  "variantes": [
-    { "texto": "...", "hashtags": ["...", "..."] },
-    { "texto": "...", "hashtags": ["...", "..."] },
-    { "texto": "...", "hashtags": ["...", "..."] }
+  "posts": [
+    { "texto": "...", "hashtags": ["...", "..."], "formato": "Feed", "horaOptima": "09:00", "cta": "...", "tipVisual": "descripción breve de qué imagen/video acompañaría este post" }
+  ],
+  "calendario": [
+    { "dia": 0, "postIndex": 0, "nota": "por qué publicar este post primero" }
   ]
 }
-Las 3 variantes deben tener ángulos distintos entre sí (ej: una centrada en el problema, otra en el resultado, otra en la urgencia/oportunidad) — no repitas la misma idea con sinónimos.`;
+"dia" es el offset en días desde hoy (0 = hoy). Distribuí los posts a lo largo de 10-14 días, no todos el mismo día.`;
 
-    const userPrompt = `Generá 3 variantes de copy para ${plataforma}.
+    const userPrompt = `Generá una campaña de ${cantidad} posts para ${plataforma}.
 
 Producto/servicio: ${producto}
 Objetivo de la campaña: ${objetivo}
@@ -46,14 +49,18 @@ Tono deseado: ${tono || "profesional y cercano"}
 
 Lineamiento de formato para esta plataforma: ${lineamiento}
 
-Incluí 4-6 hashtags relevantes por variante (sin el símbolo #, lo agrego yo después).`;
+Cada post necesita: texto, 4-6 hashtags (sin el símbolo #), formato, horaOptima (mejor horario estimado para publicar según el hábito general de la plataforma), cta, y tipVisual.
+El array "calendario" debe tener exactamente ${cantidad} entradas, una por post, en el orden en que conviene publicarlos.`;
 
-    const raw = await callGroq(userPrompt, systemPrompt, 1500);
+    const raw = await callGroq(userPrompt, systemPrompt, 3500);
     const cleaned = raw.replace(/```json\n?|\n?```/g, "").trim();
 
-    let variantes: CampaignVariant[];
+    let posts: CampaignPost[];
+    let calendario: CalendarioItem[];
     try {
-      variantes = JSON.parse(cleaned).variantes;
+      const parsed = JSON.parse(cleaned);
+      posts = parsed.posts;
+      calendario = parsed.calendario;
     } catch (e) {
       return NextResponse.json(
         { error: `La IA no devolvió JSON válido: ${(e as Error).message}` },
@@ -62,14 +69,17 @@ Incluí 4-6 hashtags relevantes por variante (sin el símbolo #, lo agrego yo de
     }
 
     const slug = generateSlug();
+    const utmLinks = buildUtmLinks(destinoUrl, plataforma as Plataforma, slug);
+
     const campaign = {
       producto,
       objetivo,
       publico: publico || "",
       tono: tono || "",
       plataforma,
-      variantes,
-      varianteElegida: 0,
+      posts,
+      calendario,
+      utmLinks,
       destinoUrl,
       slug,
       status: "borrador" as const,
