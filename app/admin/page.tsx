@@ -9,6 +9,61 @@ const PLATAFORMAS: { value: Plataforma; label: string; icon: string }[] = [
   { value: "tiktok", label: "TikTok", icon: "🎵" },
 ];
 
+// Tus productos reales -- un click llena producto, público y link de destino.
+// El objetivo lo dejamos para que lo ajustes vos según qué estés impulsando
+// esa semana (no hay un "objetivo correcto" único por producto).
+const PRODUCT_PRESETS: { emoji: string; producto: string; publico: string; destinoUrl: string; objetivoSugerido: string }[] = [
+  {
+    emoji: "🔍",
+    producto: "AuditIA — auditoría forense con IA para detectar irregularidades, fraude y pagos sospechosos",
+    publico: "administradores de consorcios y responsables financieros",
+    destinoUrl: "https://auditia-consorcial.onrender.com/overview",
+    objetivoSugerido: "conseguir demos agendadas",
+  },
+  {
+    emoji: "🏃",
+    producto: "PaceAI — coaching deportivo con planes personalizados y métricas generadas por IA",
+    publico: "corredores que entrenan para una carrera",
+    destinoUrl: "https://paceia.ezeti.pro",
+    objetivoSugerido: "conseguir nuevos usuarios registrados",
+  },
+  {
+    emoji: "🩺",
+    producto: "Consultorio Dra. Verónica — mejora la comunicación con pacientes",
+    publico: "pacientes actuales y potenciales del consultorio",
+    destinoUrl: "https://consultorio-dra-veronica.vercel.app/",
+    objetivoSugerido: "generar turnos e interacción con pacientes",
+  },
+  {
+    emoji: "🥚",
+    producto: "Incubadora AI — descubrí hipótesis, oportunidades y caminos de negocio con IA",
+    publico: "emprendedores en etapa de idea",
+    destinoUrl: "https://incubadora-ai-frontend.onrender.com/",
+    objetivoSugerido: "conseguir usuarios probando la herramienta",
+  },
+  {
+    emoji: "🌱",
+    producto: "Semilla AI — roadmap de desarrollo generado por IA para tu proyecto",
+    publico: "emprendedores que ya tienen una idea validada",
+    destinoUrl: "https://semillai-c0y1.onrender.com/dashboard",
+    objetivoSugerido: "conseguir usuarios probando la herramienta",
+  },
+  {
+    emoji: "🪱",
+    producto: "Tierra Viva — e-commerce con IA para vender y escalar sin perder identidad de marca",
+    publico: "dueños de emprendimientos chicos que venden online",
+    destinoUrl: "https://tierraviva.ezeti.pro/",
+    objetivoSugerido: "conseguir primeras ventas",
+  },
+  {
+    emoji: "💼",
+    producto: "JobTrack AI — organizá tu búsqueda laboral con scraping e IA",
+    publico: "profesionales buscando trabajo activamente",
+    destinoUrl: "https://jobtrack-ai-frontend.onrender.com/",
+    objetivoSugerido: "conseguir usuarios probando la herramienta",
+  },
+];
+
 const STATUS_CONFIG: Record<Campaign["status"], { label: string; color: string }> = {
   borrador: { label: "Borrador", color: "bg-slate-700 text-slate-300" },
   activa: { label: "Activa", color: "bg-cyan-500/20 text-cyan-400" },
@@ -213,6 +268,29 @@ export default function AdminDashboard() {
             <p className="text-sm text-slate-500 mb-6">
               La IA arma una secuencia completa de posts (no uno solo) con calendario sugerido y links UTM listos.
             </p>
+
+            <label className="block text-xs font-mono text-slate-500 uppercase mb-2">Elegí un producto (autocompleta todo)</label>
+            <div className="flex flex-wrap gap-2 mb-6">
+              {PRODUCT_PRESETS.map((p) => (
+                <button
+                  key={p.destinoUrl}
+                  type="button"
+                  onClick={() => {
+                    setForm((f) => ({
+                      ...f,
+                      producto: p.producto,
+                      publico: p.publico,
+                      destinoUrl: p.destinoUrl,
+                      objetivo: p.objetivoSugerido,
+                    }));
+                    setGenError("");
+                  }}
+                  className="text-xs font-semibold bg-slate-950 border border-slate-700 hover:border-cyan-500 hover:text-cyan-400 text-slate-300 px-3 py-2 rounded-lg transition-colors"
+                >
+                  {p.emoji} {p.producto.split(" — ")[0]}
+                </button>
+              ))}
+            </div>
             <div className="grid md:grid-cols-2 gap-4 mb-4">
               <Field label="Producto / servicio *">
                 <input className="input" placeholder="Ej: AuditIA — auditoría forense con IA para consorcios"
