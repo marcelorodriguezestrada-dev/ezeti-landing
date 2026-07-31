@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { campaignsCol } from "@/lib/firebaseAdmin";
+import { getCampaignsCol } from "@/lib/firebaseAdmin";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -26,7 +26,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       update.publishedAt = Date.now();
     }
 
-    await campaignsCol.doc(id).update(update);
+    await getCampaignsCol().doc(id).update(update);
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Error en PATCH /api/admin/campaigns/[id]:", err);
@@ -37,7 +37,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    await campaignsCol.doc(id).delete();
+    await getCampaignsCol().doc(id).delete();
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("Error en DELETE /api/admin/campaigns/[id]:", err);

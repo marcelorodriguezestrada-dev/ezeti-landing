@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { campaignsCol } from "@/lib/firebaseAdmin";
+import { getCampaignsCol } from "@/lib/firebaseAdmin";
 import { callGroq } from "@/lib/groq";
 import { generateSlug } from "@/lib/slug";
 import type { Plataforma, CampaignVariant } from "@/lib/types";
@@ -81,7 +81,7 @@ Incluí 4-6 hashtags relevantes por variante (sin el símbolo #, lo agrego yo de
       publishedAt: null,
     };
 
-    const doc = await campaignsCol.add(campaign);
+    const doc = await getCampaignsCol().add(campaign);
     return NextResponse.json({ id: doc.id, ...campaign });
   } catch (err) {
     console.error("Error en /api/admin/campaigns/generate:", err);
