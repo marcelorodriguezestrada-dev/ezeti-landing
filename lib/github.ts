@@ -59,6 +59,23 @@ const LANDING_CANDIDATES = [
   "src/pages/Home.jsx",
 ];
 
+export async function listUserRepos() {
+  const data = await fetchJson(`${GITHUB_API}/user/repos?per_page=100&sort=updated&affiliation=owner`);
+  if (!data) {
+    throw new Error(
+      "No pude listar tus repos. Confirmá que GITHUB_TOKEN esté cargado y tenga permiso de lectura sobre tus repositorios."
+    );
+  }
+  return (data as Array<Record<string, unknown>>).map((r) => ({
+    name: r.name as string,
+    fullName: r.full_name as string,
+    description: (r.description as string) || "",
+    homepage: (r.homepage as string) || "",
+    updatedAt: r.updated_at as string,
+    private: r.private as boolean,
+  }));
+}
+
 export async function analyzeGithubRepo(repoUrl: string) {
   const parsed = parseRepoUrl(repoUrl);
   if (!parsed) {

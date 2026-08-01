@@ -581,6 +581,9 @@ function SitiosTab({
   const [textoIA, setTextoIA] = useState("");
   const [urlIA, setUrlIA] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
+  const [repos, setRepos] = useState<{ name: string; fullName: string; description: string; homepage: string; private: boolean }[]>([]);
+  const [loadingRepos, setLoadingRepos] = useState(false);
+  const [reposError, setReposError] = useState("");
   const [analizando, setAnalizando] = useState(false);
   const [nuevo, setNuevo] = useState({
     emoji: "🌐",
@@ -613,6 +616,22 @@ function SitiosTab({
       setError((e as Error).message);
     } finally {
       setAnalizando(false);
+    }
+  };
+
+  const loadRepos = async () => {
+    if (repos.length > 0 || loadingRepos) return; // ya cargados, no repetir
+    setLoadingRepos(true);
+    setReposError("");
+    try {
+      const res = await fetch("/api/admin/github/repos");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      setRepos(data);
+    } catch (e) {
+      setReposError((e as Error).message);
+    } finally {
+      setLoadingRepos(false);
     }
   };
 
@@ -685,7 +704,7 @@ function SitiosTab({
             </button>
             <button
               type="button"
-              onClick={() => setModo("github")}
+              onClick={() => { setModo("github"); loadRepos(); }}
               className={["text-xs font-semibold px-3 py-1.5 rounded-full transition-colors", modo === "github" ? "bg-cyan-500 text-slate-950" : "bg-slate-950 border border-slate-700 text-slate-400"].join(" ")}
             >
               🐙 Desde GitHub
@@ -701,7 +720,38 @@ function SitiosTab({
 
           {modo === "github" && (
             <>
-              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Link del repositorio</label>
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Elegí tu repositorio</label>
+
+              {loadingRepos && <p className="text-xs text-slate-500 mb-3">Cargando tus repos…</p>}
+
+              {reposError && (
+                <p className="text-xs text-amber-500 mb-3">
+                  {reposError} — podés pegar la URL manualmente en el campo de abajo igual.
+                </p>
+              )}
+
+              {repos.length > 0 && (
+                <select
+                  className="input mb-3"
+                  value={repoUrl}
+                  onChange={(e) => {
+                    setRepoUrl(e.target.value);
+                    const r = repos.find((x) => `https://github.com/${x.fullName}` === e.target.value);
+                    if (r?.homepage) setUrlIA(r.homepage);
+                  }}
+                >
+                  <option value="">-- Elegí un repo --</option>
+                  {repos.map((r) => (
+                    <option key={r.fullName} value={`https://github.com/${r.fullName}`}>
+                      {r.private ? "🔒 " : ""}{r.name}{r.description ? ` — ${r.description}` : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">
+                {repos.length > 0 ? "...o pegá otra URL manualmente" : "Link del repositorio"}
+              </label>
               <input className="input mb-3" placeholder="https://github.com/tu-usuario/tu-repo" value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} />
               <label className="block text-xs font-mono text-slate-500 uppercase mb-1">URL del sitio en vivo (opcional, para el link de destino de las campañas)</label>
               <input className="input mb-4" placeholder="https://..." value={urlIA} onChange={(e) => setUrlIA(e.target.value)} />
