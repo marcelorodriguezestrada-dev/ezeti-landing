@@ -577,6 +577,11 @@ function SitiosTab({
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [modo, setModo] = useState<"manual" | "ia" | "github">("ia");
+  const [textoIA, setTextoIA] = useState("");
+  const [urlIA, setUrlIA] = useState("");
+  const [repoUrl, setRepoUrl] = useState("");
+  const [analizando, setAnalizando] = useState(false);
   const [nuevo, setNuevo] = useState({
     emoji: "🌐",
     nombre: "",
@@ -586,6 +591,54 @@ function SitiosTab({
     objetivoSugerido: "generar consultas de nuevos clientes",
     url: "",
   });
+
+  const handleAnalizar = async () => {
+    if (textoIA.trim().length < 15) {
+      setError("Contame un poco más sobre el producto/negocio (mínimo unas líneas).");
+      return;
+    }
+    setAnalizando(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/sites/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texto: textoIA, url: urlIA }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      setNuevo({ ...data, url: urlIA || data.url || "" });
+      setModo("manual"); // pasa al formulario normal para que revises/ajustes antes de guardar
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setAnalizando(false);
+    }
+  };
+
+  const handleAnalizarGithub = async () => {
+    if (!repoUrl.trim()) {
+      setError("Pegá el link del repositorio (ej: https://github.com/usuario/repo)");
+      return;
+    }
+    setAnalizando(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/sites/extract-github", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repoUrl, url: urlIA }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      setNuevo({ ...data, url: urlIA || data.url || "" });
+      setModo("manual");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setAnalizando(false);
+    }
+  };
 
   const handleAdd = async () => {
     if (!nuevo.nombre || !nuevo.descripcion || !nuevo.url) {
@@ -622,6 +675,69 @@ function SitiosTab({
 
       {showForm && (
         <div className="bg-slate-900/50 border border-cyan-500/30 rounded-2xl p-6 mb-6">
+          <div className="flex gap-2 mb-5">
+            <button
+              type="button"
+              onClick={() => setModo("ia")}
+              className={["text-xs font-semibold px-3 py-1.5 rounded-full transition-colors", modo === "ia" ? "bg-cyan-500 text-slate-950" : "bg-slate-950 border border-slate-700 text-slate-400"].join(" ")}
+            >
+              ✨ Describir y que la IA lo arme
+            </button>
+            <button
+              type="button"
+              onClick={() => setModo("github")}
+              className={["text-xs font-semibold px-3 py-1.5 rounded-full transition-colors", modo === "github" ? "bg-cyan-500 text-slate-950" : "bg-slate-950 border border-slate-700 text-slate-400"].join(" ")}
+            >
+              🐙 Desde GitHub
+            </button>
+            <button
+              type="button"
+              onClick={() => setModo("manual")}
+              className={["text-xs font-semibold px-3 py-1.5 rounded-full transition-colors", modo === "manual" ? "bg-cyan-500 text-slate-950" : "bg-slate-950 border border-slate-700 text-slate-400"].join(" ")}
+            >
+              ✏️ Completar manual
+            </button>
+          </div>
+
+          {modo === "github" && (
+            <>
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Link del repositorio</label>
+              <input className="input mb-3" placeholder="https://github.com/tu-usuario/tu-repo" value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} />
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">URL del sitio en vivo (opcional, para el link de destino de las campañas)</label>
+              <input className="input mb-4" placeholder="https://..." value={urlIA} onChange={(e) => setUrlIA(e.target.value)} />
+              {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+              <button onClick={handleAnalizarGithub} disabled={analizando} className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold px-6 py-2.5 rounded-lg transition-colors">
+                {analizando ? "Leyendo el repo…" : "🐙 Analizar repositorio"}
+              </button>
+              <p className="text-[11px] text-slate-600 mt-3">
+                Leo el README, la descripción del repo y el código de la página principal si la encuentro. Si es privado, necesitás tener <code className="text-slate-500">GITHUB_TOKEN</code> cargado en las variables de entorno.
+              </p>
+            </>
+          )}
+
+          {modo === "ia" && (
+            <>
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">
+                Contame sobre el producto/negocio (pegá lo que tengas: texto de tu web, notas, precios, lo que sea)
+              </label>
+              <textarea
+                className="input mb-3"
+                style={{ minHeight: 120, resize: "vertical" as const }}
+                placeholder='Ej: "Vendemos lombrices californianas para compost casero. Pack de 100 lombrices a $8000, ideal para armar tu propia lombricompostera en casa y tener plantas más sanas..."'
+                value={textoIA}
+                onChange={(e) => setTextoIA(e.target.value)}
+              />
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">URL (opcional)</label>
+              <input className="input mb-4" placeholder="https://..." value={urlIA} onChange={(e) => setUrlIA(e.target.value)} />
+              {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+              <button onClick={handleAnalizar} disabled={analizando} className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold px-6 py-2.5 rounded-lg transition-colors">
+                {analizando ? "Analizando…" : "✨ Analizar con IA"}
+              </button>
+            </>
+          )}
+
+          {modo === "manual" && (
+            <>
           <div className="grid md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Emoji</label>
@@ -656,6 +772,8 @@ function SitiosTab({
           <button onClick={handleAdd} disabled={saving} className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold px-6 py-2.5 rounded-lg transition-colors">
             {saving ? "Guardando..." : "Guardar sitio"}
           </button>
+            </>
+          )}
         </div>
       )}
 
