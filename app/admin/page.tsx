@@ -1,67 +1,12 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type { Campaign, Plataforma } from "@/lib/types";
+import type { Campaign, Plataforma, Site } from "@/lib/types";
 
 const PLATAFORMAS: { value: Plataforma; label: string; icon: string }[] = [
   { value: "instagram", label: "Instagram", icon: "📸" },
   { value: "linkedin", label: "LinkedIn", icon: "💼" },
   { value: "facebook", label: "Facebook", icon: "👥" },
   { value: "tiktok", label: "TikTok", icon: "🎵" },
-];
-
-// Tus productos reales -- un click llena producto, público y link de destino.
-// El objetivo lo dejamos para que lo ajustes vos según qué estés impulsando
-// esa semana (no hay un "objetivo correcto" único por producto).
-const PRODUCT_PRESETS: { emoji: string; producto: string; publico: string; destinoUrl: string; objetivoSugerido: string }[] = [
-  {
-    emoji: "🔍",
-    producto: "AuditIA — auditoría forense con IA para detectar irregularidades, fraude y pagos sospechosos",
-    publico: "administradores de consorcios y responsables financieros",
-    destinoUrl: "https://auditia-consorcial.onrender.com/overview",
-    objetivoSugerido: "conseguir demos agendadas",
-  },
-  {
-    emoji: "🏃",
-    producto: "PaceAI — coaching deportivo con planes personalizados y métricas generadas por IA",
-    publico: "corredores que entrenan para una carrera",
-    destinoUrl: "https://paceia.ezeti.pro",
-    objetivoSugerido: "conseguir nuevos usuarios registrados",
-  },
-  {
-    emoji: "🩺",
-    producto: "Consultorio Dra. Verónica — mejora la comunicación con pacientes",
-    publico: "pacientes actuales y potenciales del consultorio",
-    destinoUrl: "https://consultorio-dra-veronica.vercel.app/",
-    objetivoSugerido: "generar turnos e interacción con pacientes",
-  },
-  {
-    emoji: "🥚",
-    producto: "Incubadora AI — descubrí hipótesis, oportunidades y caminos de negocio con IA",
-    publico: "emprendedores en etapa de idea",
-    destinoUrl: "https://incubadora-ai-frontend.onrender.com/",
-    objetivoSugerido: "conseguir usuarios probando la herramienta",
-  },
-  {
-    emoji: "🌱",
-    producto: "Semilla AI — roadmap de desarrollo generado por IA para tu proyecto",
-    publico: "emprendedores que ya tienen una idea validada",
-    destinoUrl: "https://semillai-c0y1.onrender.com/dashboard",
-    objetivoSugerido: "conseguir usuarios probando la herramienta",
-  },
-  {
-    emoji: "🪱",
-    producto: "Tierra Viva — e-commerce con IA para vender y escalar sin perder identidad de marca",
-    publico: "dueños de emprendimientos chicos que venden online",
-    destinoUrl: "https://tierraviva.ezeti.pro/",
-    objetivoSugerido: "conseguir primeras ventas",
-  },
-  {
-    emoji: "💼",
-    producto: "JobTrack AI — organizá tu búsqueda laboral con scraping e IA",
-    publico: "profesionales buscando trabajo activamente",
-    destinoUrl: "https://jobtrack-ai-frontend.onrender.com/",
-    objetivoSugerido: "conseguir usuarios probando la herramienta",
-  },
 ];
 
 const STATUS_CONFIG: Record<Campaign["status"], { label: string; color: string }> = {
@@ -108,8 +53,9 @@ function CopyBtn({ text, small }: { text: string; small?: boolean }) {
 }
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<"generar" | "campanas" | "calendario">("campanas");
+  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios">("campanas");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState("");
@@ -128,7 +74,12 @@ export default function AdminDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      setCampaigns(await api("/api/admin/campaigns"));
+      const [camps, sts] = await Promise.all([
+        api("/api/admin/campaigns"),
+        api("/api/admin/sites"),
+      ]);
+      setCampaigns(camps);
+      setSites(sts);
     } catch (e) {
       console.error(e);
     } finally {
@@ -188,6 +139,31 @@ export default function AdminDashboard() {
     setTimeout(() => setCopiedId(null), 1500);
   };
 
+  const addSite = async (site: Omit<Site, "id" | "activo" | "createdAt">) => {
+    const nuevo = await api("/api/admin/sites", { method: "POST", body: JSON.stringify(site) });
+    setSites((prev) => [...prev, nuevo]);
+  };
+
+  const updateSite = async (id: string, patch: Partial<Site>) => {
+    setSites((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+    try {
+      await api(`/api/admin/sites/${id}`, { method: "PATCH", body: JSON.stringify(patch) });
+    } catch (e) {
+      alert("Error guardando: " + (e as Error).message);
+      load();
+    }
+  };
+
+  const deleteSite = async (id: string) => {
+    if (!confirm("¿Borrar este sitio de la lista? No afecta campañas ya generadas.")) return;
+    try {
+      await api(`/api/admin/sites/${id}`, { method: "DELETE" });
+      setSites((prev) => prev.filter((s) => s.id !== id));
+    } catch (e) {
+      alert("Error: " + (e as Error).message);
+    }
+  };
+
   const totales = campaigns.reduce(
     (acc, c) => ({
       visitas: acc.visitas + (c.visitas || 0),
@@ -227,6 +203,7 @@ export default function AdminDashboard() {
               { id: "generar", label: "✨ Generar" },
               { id: "campanas", label: "📋 Campañas" },
               { id: "calendario", label: "📅 Calendario" },
+              { id: "sitios", label: "🌐 Sitios" },
             ].map((t) => (
               <button
                 key={t.id}
@@ -269,25 +246,30 @@ export default function AdminDashboard() {
               La IA arma una secuencia completa de posts (no uno solo) con calendario sugerido y links UTM listos.
             </p>
 
-            <label className="block text-xs font-mono text-slate-500 uppercase mb-2">Elegí un producto (autocompleta todo)</label>
+            <label className="block text-xs font-mono text-slate-500 uppercase mb-2">Elegí un sitio (autocompleta todo)</label>
             <div className="flex flex-wrap gap-2 mb-6">
-              {PRODUCT_PRESETS.map((p) => (
+              {sites.filter((s) => s.activo).length === 0 && (
+                <p className="text-xs text-slate-600">
+                  No hay sitios activos todavía. Andá a la pestaña 🌐 Sitios para agregar o activar alguno.
+                </p>
+              )}
+              {sites.filter((s) => s.activo).map((s) => (
                 <button
-                  key={p.destinoUrl}
+                  key={s.id}
                   type="button"
                   onClick={() => {
                     setForm((f) => ({
                       ...f,
-                      producto: p.producto,
-                      publico: p.publico,
-                      destinoUrl: p.destinoUrl,
-                      objetivo: p.objetivoSugerido,
+                      producto: s.descripcion,
+                      publico: s.publico,
+                      destinoUrl: s.url,
+                      objetivo: s.objetivoSugerido,
                     }));
                     setGenError("");
                   }}
                   className="text-xs font-semibold bg-slate-950 border border-slate-700 hover:border-cyan-500 hover:text-cyan-400 text-slate-300 px-3 py-2 rounded-lg transition-colors"
                 >
-                  {p.emoji} {p.producto.split(" — ")[0]}
+                  {s.emoji} {s.nombre}
                 </button>
               ))}
             </div>
@@ -402,6 +384,7 @@ export default function AdminDashboard() {
             )}
           </div>
         )}
+        {tab === "sitios" && <SitiosTab sites={sites} onAdd={addSite} onUpdate={updateSite} onDelete={deleteSite} />}
       </main>
 
       <style jsx global>{`
@@ -533,6 +516,122 @@ function CampaignCard({
             Guardar métricas
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+function SitiosTab({
+  sites, onAdd, onUpdate, onDelete,
+}: {
+  sites: Site[];
+  onAdd: (site: Omit<Site, "id" | "activo" | "createdAt">) => Promise<void>;
+  onUpdate: (id: string, patch: Partial<Site>) => void;
+  onDelete: (id: string) => void;
+}) {
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [nuevo, setNuevo] = useState({
+    emoji: "🌐",
+    nombre: "",
+    descripcion: "",
+    publico: "",
+    objetivoSugerido: "generar consultas de nuevos clientes",
+    url: "",
+  });
+
+  const handleAdd = async () => {
+    if (!nuevo.nombre || !nuevo.descripcion || !nuevo.url) {
+      setError("Completá al menos nombre, descripción y URL.");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await onAdd(nuevo);
+      setNuevo({ emoji: "🌐", nombre: "", descripcion: "", publico: "", objetivoSugerido: "generar consultas de nuevos clientes", url: "" });
+      setShowForm(false);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-bold text-white">Sitios / productos</h2>
+          <p className="text-sm text-slate-500">Estos son los que aparecen como botones rápidos al generar una campaña. Solo los <strong>activos</strong> se muestran ahí.</p>
+        </div>
+        <button
+          onClick={() => setShowForm((v) => !v)}
+          className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-sm font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+        >
+          {showForm ? "Cancelar" : "+ Agregar sitio"}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="bg-slate-900/50 border border-cyan-500/30 rounded-2xl p-6 mb-6">
+          <div className="grid md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Emoji</label>
+              <input className="input" value={nuevo.emoji} onChange={(e) => setNuevo((f) => ({ ...f, emoji: e.target.value }))} />
+            </div>
+            <div>
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Nombre corto *</label>
+              <input className="input" placeholder="Ej: Mi Nueva Web" value={nuevo.nombre} onChange={(e) => setNuevo((f) => ({ ...f, nombre: e.target.value }))} />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Descripción (esto es lo que ve la IA como &quot;producto&quot;) *</label>
+              <input className="input" placeholder="Ej: Mi Nueva Web — plataforma para..." value={nuevo.descripcion} onChange={(e) => setNuevo((f) => ({ ...f, descripcion: e.target.value }))} />
+            </div>
+            <div>
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Público objetivo</label>
+              <input className="input" placeholder="Ej: dueños de comercios" value={nuevo.publico} onChange={(e) => setNuevo((f) => ({ ...f, publico: e.target.value }))} />
+            </div>
+            <div>
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Objetivo sugerido</label>
+              <input className="input" value={nuevo.objetivoSugerido} onChange={(e) => setNuevo((f) => ({ ...f, objetivoSugerido: e.target.value }))} />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">URL *</label>
+              <input className="input" placeholder="https://..." value={nuevo.url} onChange={(e) => setNuevo((f) => ({ ...f, url: e.target.value }))} />
+            </div>
+          </div>
+          {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+          <button onClick={handleAdd} disabled={saving} className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold px-6 py-2.5 rounded-lg transition-colors">
+            {saving ? "Guardando..." : "Guardar sitio"}
+          </button>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {sites.map((s) => (
+          <div key={s.id} className={["bg-slate-900/50 border rounded-xl p-4 flex flex-wrap items-center gap-4", s.activo ? "border-slate-800" : "border-slate-800/50 opacity-50"].join(" ")}>
+            <span className="text-xl">{s.emoji}</span>
+            <div className="flex-1 min-w-[200px]">
+              <div className="text-white font-semibold text-sm">{s.nombre}</div>
+              <div className="text-xs text-slate-500 truncate">{s.url}</div>
+            </div>
+            <button
+              onClick={() => onUpdate(s.id, { activo: !s.activo })}
+              className={[
+                "text-xs font-bold px-3 py-1.5 rounded-full transition-colors",
+                s.activo ? "bg-cyan-500/20 text-cyan-400" : "bg-slate-800 text-slate-500",
+              ].join(" ")}
+            >
+              {s.activo ? "✓ Activo" : "Inactivo"}
+            </button>
+            <button onClick={() => onDelete(s.id)} className="text-slate-600 hover:text-red-400 text-xs px-2 py-1.5 transition-colors">
+              Borrar
+            </button>
+          </div>
+        ))}
+        {sites.length === 0 && <p className="text-slate-500 text-sm text-center py-10">No hay sitios cargados todavía.</p>}
       </div>
     </div>
   );

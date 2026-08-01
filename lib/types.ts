@@ -1,3 +1,15 @@
+export interface Site {
+  id: string;
+  emoji: string;
+  nombre: string;
+  descripcion: string; // se usa como "producto" al generar la campaña
+  publico: string;
+  objetivoSugerido: string;
+  url: string;
+  activo: boolean;
+  createdAt: number;
+}
+
 export type Plataforma = "instagram" | "linkedin" | "facebook" | "tiktok";
 
 export interface CampaignPost {

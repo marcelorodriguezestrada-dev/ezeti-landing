@@ -27,4 +27,8 @@ export function getCampaignsCol() {
   return getDb().collection("campaigns");
 }
 
+export function getSitesCol() {
+  return getDb().collection("sites");
+}
+
 export { admin };
