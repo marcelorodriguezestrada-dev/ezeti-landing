@@ -30,5 +30,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
     }),
   ]);
 
-  return NextResponse.redirect(data.destinoUrl);
+  // El link principal ya lleva su propio UTM -- así, lo copies de donde lo
+  // copies, siempre llega con seguimiento a donde sea que tengas Google
+  // Analytics / Vercel Analytics en el sitio de destino.
+  const destino = new URL(data.destinoUrl);
+  destino.searchParams.set("utm_source", data.plataforma || "social");
+  destino.searchParams.set("utm_medium", "social");
+  destino.searchParams.set("utm_campaign", slug);
+
+  return NextResponse.redirect(destino.toString());
 }

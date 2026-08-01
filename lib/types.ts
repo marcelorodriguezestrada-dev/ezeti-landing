@@ -2,7 +2,8 @@ export interface Site {
   id: string;
   emoji: string;
   nombre: string;
-  descripcion: string; // se usa como "producto" al generar la campaña
+  descripcion: string; // pitch de "vender la tecnología/servicio"
+  temaNegocio: string; // pitch de "vender el rubro en sí" (contenido, sin mencionar la tech)
   publico: string;
   objetivoSugerido: string;
   url: string;
@@ -39,6 +40,7 @@ export interface Campaign {
   publico: string;
   tono: string;
   plataforma: Plataforma;
+  tipoCampana: "tecnologia" | "negocio";
   posts: CampaignPost[];
   calendario: CalendarioItem[];
   utmLinks: UtmLink[];

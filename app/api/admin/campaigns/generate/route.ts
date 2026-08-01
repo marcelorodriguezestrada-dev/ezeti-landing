@@ -14,7 +14,7 @@ const LINEAMIENTOS: Record<Plataforma, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { producto, objetivo, publico, tono, plataforma, destinoUrl, cantPosts } = await req.json();
+    const { producto, objetivo, publico, tono, plataforma, destinoUrl, cantPosts, tipoCampana } = await req.json();
 
     if (!producto || !objetivo || !plataforma || !destinoUrl) {
       return NextResponse.json(
@@ -26,7 +26,24 @@ export async function POST(req: NextRequest) {
     const cantidad = Math.min(Math.max(Number(cantPosts) || 5, 1), 10);
     const lineamiento = LINEAMIENTOS[plataforma as Plataforma] || LINEAMIENTOS.instagram;
 
-    const systemPrompt = `Sos estratega de marketing digital y copywriter senior para redes sociales en LATAM/Argentina.
+    const esContenidoDeRubro = tipoCampana === "negocio";
+
+    const systemPrompt = esContenidoDeRubro
+      ? `Sos estratega de contenidos y copywriter senior para redes sociales en LATAM/Argentina.
+Armás contenido genuino sobre un tema/rubro puntual -- NO estás vendiendo tecnología, IA, ni ninguna plataforma. Es marketing de producto/estilo de vida: el objetivo es que el público se enamore del tema en sí (el hobby, el cuidado, la pasión detrás del negocio), no que sepa que "hay una app".
+Prohibido mencionar palabras como "IA", "inteligencia artificial", "plataforma", "tecnología", "app" o similares -- el contenido tiene que sonar 100% humano y apasionado por el tema, como lo escribiría alguien que ama ese rubro.
+Nunca inventás cifras de resultados, testimonios o clientes que no te dieron.
+Devolvés ÚNICAMENTE JSON válido, sin texto ni markdown alrededor, con esta forma EXACTA:
+{
+  "posts": [
+    { "texto": "...", "hashtags": ["...", "..."], "formato": "Feed", "horaOptima": "09:00", "cta": "...", "tipVisual": "descripción breve de qué imagen/video acompañaría este post" }
+  ],
+  "calendario": [
+    { "dia": 0, "postIndex": 0, "nota": "por qué publicar este post primero" }
+  ]
+}
+"dia" es el offset en días desde hoy (0 = hoy). Distribuí los posts a lo largo de 10-14 días, no todos el mismo día.`
+      : `Sos estratega de marketing digital y copywriter senior para redes sociales en LATAM/Argentina.
 Armás campañas completas y listas para ejecutar: no un solo post suelto, sino una secuencia coherente de posts que juntos cuentan una historia (ej: problema → enfoque → prueba/ejemplo → oferta → urgencia), sin repetir la misma idea con sinónimos.
 Nunca inventás cifras de resultados, testimonios o clientes que no te dieron.
 Devolvés ÚNICAMENTE JSON válido, sin texto ni markdown alrededor, con esta forma EXACTA:
@@ -77,6 +94,7 @@ El array "calendario" debe tener exactamente ${cantidad} entradas, una por post,
       publico: publico || "",
       tono: tono || "",
       plataforma,
+      tipoCampana: esContenidoDeRubro ? "negocio" : "tecnologia",
       posts,
       calendario,
       utmLinks,

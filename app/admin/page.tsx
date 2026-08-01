@@ -76,6 +76,7 @@ export default function AdminDashboard() {
     plataforma: "instagram" as Plataforma,
     destinoUrl: "",
     cantPosts: 5,
+    tipoCampana: "tecnologia" as "tecnologia" | "negocio",
   });
 
   const load = useCallback(async () => {
@@ -256,33 +257,66 @@ export default function AdminDashboard() {
               La IA arma una secuencia completa de posts (no uno solo) con calendario sugerido y links UTM listos.
             </p>
 
+            <label className="block text-xs font-mono text-slate-500 uppercase mb-2">Tipo de campaña</label>
+            <div className="flex gap-2 mb-6">
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, tipoCampana: "tecnologia" }))}
+                className={[
+                  "flex-1 text-left text-xs font-semibold p-3 rounded-lg border transition-colors",
+                  form.tipoCampana === "tecnologia" ? "bg-cyan-500/20 border-cyan-500 text-cyan-400" : "bg-slate-950 border-slate-700 text-slate-400 hover:border-slate-500",
+                ].join(" ")}
+              >
+                🔧 Vender la tecnología / servicio
+                <div className="font-normal text-slate-500 mt-1 normal-case">Ej: &quot;e-commerce con IA para vender online&quot;</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, tipoCampana: "negocio" }))}
+                className={[
+                  "flex-1 text-left text-xs font-semibold p-3 rounded-lg border transition-colors",
+                  form.tipoCampana === "negocio" ? "bg-cyan-500/20 border-cyan-500 text-cyan-400" : "bg-slate-950 border-slate-700 text-slate-400 hover:border-slate-500",
+                ].join(" ")}
+              >
+                🌱 Vender el rubro en sí (contenido)
+                <div className="font-normal text-slate-500 mt-1 normal-case">Ej: &quot;lombrices para tu huerta y ser feliz con tus plantas&quot;, sin mencionar tecnología</div>
+              </button>
+            </div>
+
             <label className="block text-xs font-mono text-slate-500 uppercase mb-2">Elegí un sitio (autocompleta todo)</label>
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mb-2">
               {sites.filter((s) => s.activo).length === 0 && (
                 <p className="text-xs text-slate-600">
                   No hay sitios activos todavía. Andá a la pestaña 🌐 Sitios para agregar o activar alguno.
                 </p>
               )}
-              {sites.filter((s) => s.activo).map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => {
-                    setForm((f) => ({
-                      ...f,
-                      producto: s.descripcion,
-                      publico: s.publico,
-                      destinoUrl: s.url,
-                      objetivo: s.objetivoSugerido,
-                    }));
-                    setGenError("");
-                  }}
-                  className="text-xs font-semibold bg-slate-950 border border-slate-700 hover:border-cyan-500 hover:text-cyan-400 text-slate-300 px-3 py-2 rounded-lg transition-colors"
-                >
-                  {s.emoji} {s.nombre}
-                </button>
-              ))}
+              {sites.filter((s) => s.activo).map((s) => {
+                const sinTema = form.tipoCampana === "negocio" && !s.temaNegocio;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => {
+                      const producto = form.tipoCampana === "negocio" ? (s.temaNegocio || s.descripcion) : s.descripcion;
+                      setForm((f) => ({ ...f, producto, publico: s.publico, destinoUrl: s.url, objetivo: s.objetivoSugerido }));
+                      setGenError("");
+                    }}
+                    title={sinTema ? "Este sitio no tiene 'tema de negocio' cargado todavía -- va a usar la descripción técnica. Completalo en 🌐 Sitios." : undefined}
+                    className={[
+                      "text-xs font-semibold bg-slate-950 border px-3 py-2 rounded-lg transition-colors",
+                      sinTema ? "border-amber-700/50 text-amber-500/80 hover:border-amber-500" : "border-slate-700 hover:border-cyan-500 hover:text-cyan-400 text-slate-300",
+                    ].join(" ")}
+                  >
+                    {s.emoji} {s.nombre}{sinTema ? " ⚠️" : ""}
+                  </button>
+                );
+              })}
             </div>
+            {form.tipoCampana === "negocio" && (
+              <p className="text-[11px] text-slate-600 mb-4">
+                ⚠️ = ese sitio todavía no tiene &quot;tema de negocio&quot; cargado (la pestaña 🌐 Sitios te deja completarlo).
+              </p>
+            )}
             <div className="grid md:grid-cols-2 gap-4 mb-4">
               <Field label="Producto / servicio *">
                 <input className="input" placeholder="Ej: AuditIA — auditoría forense con IA para consorcios"
@@ -547,6 +581,7 @@ function SitiosTab({
     emoji: "🌐",
     nombre: "",
     descripcion: "",
+    temaNegocio: "",
     publico: "",
     objetivoSugerido: "generar consultas de nuevos clientes",
     url: "",
@@ -561,7 +596,7 @@ function SitiosTab({
     setError("");
     try {
       await onAdd(nuevo);
-      setNuevo({ emoji: "🌐", nombre: "", descripcion: "", publico: "", objetivoSugerido: "generar consultas de nuevos clientes", url: "" });
+      setNuevo({ emoji: "🌐", nombre: "", descripcion: "", temaNegocio: "", publico: "", objetivoSugerido: "generar consultas de nuevos clientes", url: "" });
       setShowForm(false);
     } catch (e) {
       setError((e as Error).message);
@@ -600,6 +635,10 @@ function SitiosTab({
               <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Descripción (esto es lo que ve la IA como &quot;producto&quot;) *</label>
               <input className="input" placeholder="Ej: Mi Nueva Web — plataforma para..." value={nuevo.descripcion} onChange={(e) => setNuevo((f) => ({ ...f, descripcion: e.target.value }))} />
             </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Tema de negocio (para campañas de contenido, sin mencionar tecnología)</label>
+              <input className="input" placeholder="Ej: Lombrices para tu huerta y ser feliz con tus plantas" value={nuevo.temaNegocio} onChange={(e) => setNuevo((f) => ({ ...f, temaNegocio: e.target.value }))} />
+            </div>
             <div>
               <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Público objetivo</label>
               <input className="input" placeholder="Ej: dueños de comercios" value={nuevo.publico} onChange={(e) => setNuevo((f) => ({ ...f, publico: e.target.value }))} />
@@ -622,28 +661,59 @@ function SitiosTab({
 
       <div className="space-y-3">
         {sites.map((s) => (
-          <div key={s.id} className={["bg-slate-900/50 border rounded-xl p-4 flex flex-wrap items-center gap-4", s.activo ? "border-slate-800" : "border-slate-800/50 opacity-50"].join(" ")}>
-            <span className="text-xl">{s.emoji}</span>
-            <div className="flex-1 min-w-[200px]">
-              <div className="text-white font-semibold text-sm">{s.nombre}</div>
-              <div className="text-xs text-slate-500 truncate">{s.url}</div>
-            </div>
-            <button
-              onClick={() => onUpdate(s.id, { activo: !s.activo })}
-              className={[
-                "text-xs font-bold px-3 py-1.5 rounded-full transition-colors",
-                s.activo ? "bg-cyan-500/20 text-cyan-400" : "bg-slate-800 text-slate-500",
-              ].join(" ")}
-            >
-              {s.activo ? "✓ Activo" : "Inactivo"}
-            </button>
-            <button onClick={() => onDelete(s.id)} className="text-slate-600 hover:text-red-400 text-xs px-2 py-1.5 transition-colors">
-              Borrar
-            </button>
-          </div>
+          <SiteRow key={s.id} site={s} onUpdate={onUpdate} onDelete={onDelete} />
         ))}
         {sites.length === 0 && <p className="text-slate-500 text-sm text-center py-10">No hay sitios cargados todavía.</p>}
       </div>
+    </div>
+  );
+}
+
+function SiteRow({ site: s, onUpdate, onDelete }: { site: Site; onUpdate: (id: string, patch: Partial<Site>) => void; onDelete: (id: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [descripcion, setDescripcion] = useState(s.descripcion);
+  const [temaNegocio, setTemaNegocio] = useState(s.temaNegocio || "");
+
+  return (
+    <div className={["bg-slate-900/50 border rounded-xl p-4", s.activo ? "border-slate-800" : "border-slate-800/50 opacity-50"].join(" ")}>
+      <div className="flex flex-wrap items-center gap-4">
+        <span className="text-xl">{s.emoji}</span>
+        <div className="flex-1 min-w-[200px]">
+          <div className="text-white font-semibold text-sm">{s.nombre}</div>
+          <div className="text-xs text-slate-500 truncate">{s.url}</div>
+        </div>
+        {!s.temaNegocio && <span className="text-[10px] text-amber-500/80">sin tema de negocio</span>}
+        <button onClick={() => setEditing((v) => !v)} className="text-xs font-semibold text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5">
+          {editing ? "▲" : "✏️"} Editar
+        </button>
+        <button
+          onClick={() => onUpdate(s.id, { activo: !s.activo })}
+          className={["text-xs font-bold px-3 py-1.5 rounded-full transition-colors", s.activo ? "bg-cyan-500/20 text-cyan-400" : "bg-slate-800 text-slate-500"].join(" ")}
+        >
+          {s.activo ? "✓ Activo" : "Inactivo"}
+        </button>
+        <button onClick={() => onDelete(s.id)} className="text-slate-600 hover:text-red-400 text-xs px-2 py-1.5 transition-colors">
+          Borrar
+        </button>
+      </div>
+      {editing && (
+        <div className="mt-4 pt-4 border-t border-slate-800/50 space-y-3">
+          <div>
+            <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Descripción (venta de tecnología)</label>
+            <input className="input" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Tema de negocio (venta del rubro, sin mencionar tecnología)</label>
+            <input className="input" placeholder="Ej: Lombrices para tu huerta y ser feliz con tus plantas" value={temaNegocio} onChange={(e) => setTemaNegocio(e.target.value)} />
+          </div>
+          <button
+            onClick={() => { onUpdate(s.id, { descripcion, temaNegocio }); setEditing(false); }}
+            className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition-colors"
+          >
+            Guardar cambios
+          </button>
+        </div>
+      )}
     </div>
   );
 }
