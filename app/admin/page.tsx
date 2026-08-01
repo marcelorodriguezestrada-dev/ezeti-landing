@@ -515,18 +515,23 @@ function CampaignCard({
 
       {showPosts && (
         <div className="grid md:grid-cols-2 gap-3 mb-4">
-          {campaign.posts?.map((post, i) => (
-            <div key={i} className="bg-slate-950 border border-slate-800 rounded-xl p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono text-slate-500">Post {i + 1} · {post.formato} · 🕐 {post.horaOptima}</span>
-                <CopyBtn small text={`${post.texto}\n\n${(post.hashtags || []).map((h) => `#${h}`).join(" ")}`} />
+          {campaign.posts?.map((post, i) => {
+            const link = typeof window !== "undefined" ? `${window.location.origin}/go/${campaign.slug}` : `/go/${campaign.slug}`;
+            const hashtags = (post.hashtags || []).map((h) => `#${h}`).join(" ");
+            return (
+              <div key={i} className="bg-slate-950 border border-slate-800 rounded-xl p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-mono text-slate-500">Post {i + 1} · {post.formato} · 🕐 {post.horaOptima}</span>
+                  <CopyBtn small text={`${post.texto}\n\n${link}\n\n${hashtags}`} />
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap mb-2">{post.texto}</p>
+                <p className="text-[10px] text-cyan-400 mb-2 break-all">{link}</p>
+                <p className="text-[10px] text-cyan-500/70 mb-2">{hashtags}</p>
+                {post.cta && <p className="text-[10px] text-slate-500 bg-slate-900 border border-slate-800 rounded px-2 py-1 mb-1">CTA: {post.cta}</p>}
+                {post.tipVisual && <p className="text-[10px] text-slate-600">🎨 {post.tipVisual}</p>}
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap mb-2">{post.texto}</p>
-              <p className="text-[10px] text-cyan-500/70 mb-2">{(post.hashtags || []).map((h) => `#${h}`).join(" ")}</p>
-              {post.cta && <p className="text-[10px] text-slate-500 bg-slate-900 border border-slate-800 rounded px-2 py-1 mb-1">CTA: {post.cta}</p>}
-              {post.tipVisual && <p className="text-[10px] text-slate-600">🎨 {post.tipVisual}</p>}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

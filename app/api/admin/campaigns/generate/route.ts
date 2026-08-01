@@ -25,8 +25,12 @@ export async function POST(req: NextRequest) {
 
     const cantidad = Math.min(Math.max(Number(cantPosts) || 5, 1), 10);
     const lineamiento = LINEAMIENTOS[plataforma as Plataforma] || LINEAMIENTOS.instagram;
-
     const esContenidoDeRubro = tipoCampana === "negocio";
+
+    // Generamos el slug ANTES del prompt: el link de tracking se agrega
+    // siempre de forma determinística (ver más abajo y en el frontend),
+    // no depende de que la IA decida escribirlo bien.
+    const slug = generateSlug();
 
     const systemPrompt = esContenidoDeRubro
       ? `Sos estratega de contenidos y copywriter senior para redes sociales en LATAM/Argentina.
@@ -67,7 +71,9 @@ Tono deseado: ${tono || "profesional y cercano"}
 Lineamiento de formato para esta plataforma: ${lineamiento}
 
 Cada post necesita: texto, 4-6 hashtags (sin el símbolo #), formato, horaOptima (mejor horario estimado para publicar según el hábito general de la plataforma), cta, y tipVisual.
-El array "calendario" debe tener exactamente ${cantidad} entradas, una por post, en el orden en que conviene publicarlos.`;
+El array "calendario" debe tener exactamente ${cantidad} entradas, una por post, en el orden en que conviene publicarlos.
+
+Importante sobre el link: NO escribas ninguna URL dentro de "texto" -- el link de la campaña se agrega aparte, siempre, automáticamente. En "cta" simplemente indicá la acción (ej: "Escribinos para más info", "Conocé más acá 👇"), sin mencionar "bio" ni pegar la URL vos.`;
 
     const raw = await callGroq(userPrompt, systemPrompt, 3500);
     const cleaned = raw.replace(/```json\n?|\n?```/g, "").trim();
@@ -85,7 +91,6 @@ El array "calendario" debe tener exactamente ${cantidad} entradas, una por post,
       );
     }
 
-    const slug = generateSlug();
     const utmLinks = buildUtmLinks(destinoUrl, plataforma as Plataforma, slug);
 
     const campaign = {
