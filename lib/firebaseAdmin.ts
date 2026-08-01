@@ -31,4 +31,8 @@ export function getSitesCol() {
   return getDb().collection("sites");
 }
 
+export function getVisitsCol() {
+  return getDb().collection("visits");
+}
+
 export { admin };

@@ -53,9 +53,16 @@ function CopyBtn({ text, small }: { text: string; small?: boolean }) {
 }
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios">("campanas");
+  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics">("campanas");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
+  const [analytics, setAnalytics] = useState<{
+    totalVisitas: number;
+    porDia: { key: string; visitas: number }[];
+    porMes: { key: string; visitas: number }[];
+    porAnio: { key: string; visitas: number }[];
+    ranking: { producto: string; visitas: number }[];
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState("");
@@ -74,12 +81,14 @@ export default function AdminDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [camps, sts] = await Promise.all([
+      const [camps, sts, an] = await Promise.all([
         api("/api/admin/campaigns"),
         api("/api/admin/sites"),
+        api("/api/admin/analytics"),
       ]);
       setCampaigns(camps);
       setSites(sts);
+      setAnalytics(an);
     } catch (e) {
       console.error(e);
     } finally {
@@ -203,6 +212,7 @@ export default function AdminDashboard() {
               { id: "generar", label: "✨ Generar" },
               { id: "campanas", label: "📋 Campañas" },
               { id: "calendario", label: "📅 Calendario" },
+              { id: "analytics", label: "📊 Analytics" },
               { id: "sitios", label: "🌐 Sitios" },
             ].map((t) => (
               <button
@@ -384,6 +394,7 @@ export default function AdminDashboard() {
             )}
           </div>
         )}
+        {tab === "analytics" && <AnalyticsTab analytics={analytics} campaigns={campaigns} />}
         {tab === "sitios" && <SitiosTab sites={sites} onAdd={addSite} onUpdate={updateSite} onDelete={deleteSite} />}
       </main>
 
@@ -632,6 +643,121 @@ function SitiosTab({
           </div>
         ))}
         {sites.length === 0 && <p className="text-slate-500 text-sm text-center py-10">No hay sitios cargados todavía.</p>}
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsTab({
+  analytics, campaigns,
+}: {
+  analytics: { totalVisitas: number; porDia: { key: string; visitas: number }[]; porMes: { key: string; visitas: number }[]; porAnio: { key: string; visitas: number }[]; ranking: { producto: string; visitas: number }[] } | null;
+  campaigns: Campaign[];
+}) {
+  const [periodo, setPeriodo] = useState<"dia" | "mes" | "anio">("dia");
+
+  if (!analytics) return <p className="text-slate-500 text-center py-20">Cargando analytics…</p>;
+
+  const serie = periodo === "dia" ? analytics.porDia : periodo === "mes" ? analytics.porMes : analytics.porAnio;
+  const ultimos = serie.slice(-30); // últimos 30 puntos, para que el gráfico no se achique de más
+  const max = Math.max(...ultimos.map((d) => d.visitas), 1);
+
+  const mejorDia = [...analytics.porDia].sort((a, b) => b.visitas - a.visitas)[0];
+  const mejorProducto = analytics.ranking[0];
+  const mejorCampaña = [...campaigns].sort((a, b) => (b.visitas || 0) - (a.visitas || 0))[0];
+
+  const formatKey = (key: string) => {
+    if (periodo === "dia") {
+      const d = new Date(key + "T00:00:00");
+      return d.toLocaleDateString("es-AR", { day: "2-digit", month: "short" });
+    }
+    if (periodo === "mes") {
+      const [anio, mes] = key.split("-");
+      return new Date(Number(anio), Number(mes) - 1).toLocaleDateString("es-AR", { month: "short", year: "2-digit" });
+    }
+    return key;
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* DESTACADOS */}
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="bg-slate-900/50 border border-cyan-500/30 rounded-xl p-4">
+          <div className="text-[10px] text-slate-500 uppercase font-mono mb-1">🏆 Mejor día</div>
+          {mejorDia ? (
+            <>
+              <div className="text-lg font-bold text-white">{new Date(mejorDia.key + "T00:00:00").toLocaleDateString("es-AR", { day: "2-digit", month: "long", year: "numeric" })}</div>
+              <div className="text-sm text-cyan-400">{mejorDia.visitas} visitas</div>
+            </>
+          ) : <div className="text-sm text-slate-600">Sin datos todavía</div>}
+        </div>
+        <div className="bg-slate-900/50 border border-cyan-500/30 rounded-xl p-4">
+          <div className="text-[10px] text-slate-500 uppercase font-mono mb-1">🥇 Producto más visitado</div>
+          {mejorProducto ? (
+            <>
+              <div className="text-sm font-bold text-white truncate">{mejorProducto.producto}</div>
+              <div className="text-sm text-cyan-400">{mejorProducto.visitas} visitas</div>
+            </>
+          ) : <div className="text-sm text-slate-600">Sin datos todavía</div>}
+        </div>
+        <div className="bg-slate-900/50 border border-cyan-500/30 rounded-xl p-4">
+          <div className="text-[10px] text-slate-500 uppercase font-mono mb-1">📣 Mejor campaña puntual</div>
+          {mejorCampaña && (mejorCampaña.visitas || 0) > 0 ? (
+            <>
+              <div className="text-sm font-bold text-white truncate">{mejorCampaña.producto}</div>
+              <div className="text-sm text-cyan-400">{mejorCampaña.visitas} visitas</div>
+            </>
+          ) : <div className="text-sm text-slate-600">Sin datos todavía</div>}
+        </div>
+      </div>
+
+      {/* GRÁFICO */}
+      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-bold text-white">Visitas en el tiempo</h2>
+          <div className="flex gap-1 bg-slate-950 border border-slate-800 rounded-full p-1">
+            {(["dia", "mes", "anio"] as const).map((p) => (
+              <button key={p} onClick={() => setPeriodo(p)}
+                className={["text-xs font-semibold px-3 py-1 rounded-full transition-colors", periodo === p ? "bg-cyan-500 text-slate-950" : "text-slate-400"].join(" ")}>
+                {p === "dia" ? "Día" : p === "mes" ? "Mes" : "Año"}
+              </button>
+            ))}
+          </div>
+        </div>
+        {ultimos.length === 0 ? (
+          <p className="text-slate-500 text-sm text-center py-16">Todavía no hay visitas registradas. Compartí un link /go/ y volvé acá.</p>
+        ) : (
+          <div className="flex items-end gap-1.5 h-48">
+            {ultimos.map((d) => (
+              <div key={d.key} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                <div className="text-[10px] text-cyan-400 mb-1 opacity-0 group-hover:opacity-100 transition-opacity">{d.visitas}</div>
+                <div className="w-full bg-cyan-500/70 hover:bg-cyan-400 rounded-t transition-colors" style={{ height: `${(d.visitas / max) * 100}%`, minHeight: 2 }} />
+                <div className="text-[9px] text-slate-600 mt-1 rotate-0 whitespace-nowrap">{formatKey(d.key)}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* RANKING */}
+      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+        <h2 className="text-lg font-bold text-white mb-4">Ranking por producto</h2>
+        {analytics.ranking.length === 0 ? (
+          <p className="text-slate-500 text-sm text-center py-10">Sin datos todavía.</p>
+        ) : (
+          <div className="space-y-2">
+            {analytics.ranking.map((r, i) => (
+              <div key={r.producto} className="flex items-center gap-3">
+                <span className="text-xs font-mono text-slate-600 w-5">{i + 1}</span>
+                <span className="text-sm text-white flex-1 truncate">{r.producto}</span>
+                <div className="flex-1 max-w-[200px] bg-slate-950 rounded-full h-2 overflow-hidden">
+                  <div className="bg-cyan-500 h-full" style={{ width: `${(r.visitas / analytics.ranking[0].visitas) * 100}%` }} />
+                </div>
+                <span className="text-xs font-mono text-cyan-400 w-10 text-right">{r.visitas}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
