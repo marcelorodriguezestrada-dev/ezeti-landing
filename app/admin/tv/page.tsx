@@ -17,10 +17,11 @@ export default function TVMode() {
 
   const cargar = useCallback(async () => {
     try {
-      const [an, camps] = await Promise.all([
-        fetch("/api/admin/analytics").then((r) => r.json()),
-        fetch("/api/admin/campaigns").then((r) => r.json()),
-      ]);
+      // Secuencial en vez de Promise.all para no coincidir con la ráfaga
+      // del panel /admin si están abiertos al mismo tiempo (ver nota en
+      // app/admin/page.tsx sobre RESOURCE_EXHAUSTED de Firestore).
+      const an = await fetch("/api/admin/analytics").then((r) => r.json());
+      const camps = await fetch("/api/admin/campaigns").then((r) => r.json());
       setAnalytics(an);
       setCampaigns(camps);
       setUltimaCarga(new Date().toLocaleTimeString("es-AR"));

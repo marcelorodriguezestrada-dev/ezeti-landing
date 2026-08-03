@@ -16,13 +16,24 @@ const STATUS_CONFIG: Record<Campaign["status"], { label: string; color: string }
   finalizada: { label: "Finalizada", color: "bg-slate-800 text-slate-500" },
 };
 
-async function api(path: string, opts: RequestInit = {}) {
+async function api(path: string, opts: RequestInit = {}, retries = 3) {
   const res = await fetch(path, {
     ...opts,
     headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+  if (!res.ok) {
+    // Firestore devuelve 500 + "RESOURCE_EXHAUSTED: Quota exceeded" cuando
+    // hay ráfagas de lecturas simultáneas (típico en proyectos nuevos que
+    // todavía no "escalaron" su límite de operaciones por segundo). En vez
+    // de romper el panel, reintentamos con backoff antes de tirar el error.
+    const isQuota = typeof data.error === "string" && data.error.includes("RESOURCE_EXHAUSTED");
+    if (isQuota && retries > 0) {
+      await new Promise((r) => setTimeout(r, (4 - retries) * 800 + 400));
+      return api(path, opts, retries - 1);
+    }
+    throw new Error(data.error || `Error ${res.status}`);
+  }
   return data;
 }
 
@@ -84,13 +95,15 @@ export default function AdminDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [camps, sts, an, lds, settings] = await Promise.all([
-        api("/api/admin/campaigns"),
-        api("/api/admin/sites"),
-        api("/api/admin/analytics"),
-        api("/api/admin/leads"),
-        api("/api/admin/settings"),
-      ]);
+      // Antes se pedían las 5 rutas con Promise.all (todas al mismo
+      // instante). Con Firestore recién creado eso puede gatillar
+      // RESOURCE_EXHAUSTED aunque el volumen total sea bajo. Las pedimos
+      // secuenciales -- unos milisegundos más de carga, pero sin ráfaga.
+      const camps = await api("/api/admin/campaigns");
+      const sts = await api("/api/admin/sites");
+      const an = await api("/api/admin/analytics");
+      const lds = await api("/api/admin/leads");
+      const settings = await api("/api/admin/settings");
       setCampaigns(camps);
       setSites(sts);
       setAnalytics(an);
