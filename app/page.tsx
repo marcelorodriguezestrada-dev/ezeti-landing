@@ -97,9 +97,7 @@ export default function LandingPage() {
             <a href="#nosotros" className="transition-colors hover:text-white">Nosotros</a>
           </nav>
           <a
-            href={whatsapp}
-            target="_blank"
-            rel="noreferrer"
+            href="/lead"
             className="flex items-center gap-2 rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 transition-all hover:scale-105 hover:bg-cyan-400"
           >
             💬 Hablemos
@@ -132,7 +130,7 @@ export default function LandingPage() {
                   Ver ejemplos reales
                   <span>→</span>
                 </a>
-                <a href={whatsapp} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-7 py-4 font-semibold text-white transition-all hover:border-slate-500">
+                <a href="/lead" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/70 px-7 py-4 font-semibold text-white transition-all hover:border-slate-500">
                   Agendar una conversación
                 </a>
               </div>
@@ -338,7 +336,8 @@ export default function LandingPage() {
             <h2 className="mt-4 text-3xl font-black text-white sm:text-4xl">Si una idea merece avanzar, la convertimos en una experiencia que se puede probar y escalar.</h2>
             <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-400">Hablemos de tu negocio, tu producto o tu proceso y veamos cómo la IA puede ayudar a que todo funcione mejor.</p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <a href={whatsapp} target="_blank" rel="noreferrer" className="rounded-full bg-cyan-500 px-7 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400">Escribir por WhatsApp</a>
+              <a href="/lead" className="rounded-full bg-cyan-500 px-7 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400">Dejá tus datos</a>
+              <a href={whatsapp} target="_blank" rel="noreferrer" className="rounded-full border border-slate-700 px-7 py-3 font-semibold text-white transition hover:border-slate-500">Escribir por WhatsApp</a>
               <a href={linkedin} target="_blank" rel="noreferrer" className="rounded-full border border-slate-700 px-7 py-3 font-semibold text-white transition hover:border-slate-500">Ver LinkedIn</a>
             </div>
           </div>
