@@ -11,6 +11,22 @@ export interface Site {
   createdAt: number;
 }
 
+export type LeadStatus = "nuevo" | "quiere_agendar" | "contactado" | "reunion_agendada" | "cliente" | "descartado";
+
+export interface Lead {
+  id: string;
+  nombre: string;
+  email: string;
+  whatsapp: string;
+  mensaje: string;
+  producto: string; // denormalizado de la campaña que lo trajo, si vino de una
+  campaignId: string | null;
+  origen: string; // utm_source o "directo"
+  status: LeadStatus;
+  guionGenerado: string | null;
+  createdAt: number;
+}
+
 export type Plataforma = "instagram" | "linkedin" | "facebook" | "tiktok";
 
 export interface CampaignPost {

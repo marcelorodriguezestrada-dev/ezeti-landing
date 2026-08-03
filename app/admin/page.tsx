@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type { Campaign, Plataforma, Site } from "@/lib/types";
+import type { Campaign, Plataforma, Site, Lead } from "@/lib/types";
 
 const PLATAFORMAS: { value: Plataforma; label: string; icon: string }[] = [
   { value: "instagram", label: "Instagram", icon: "📸" },
@@ -53,9 +53,11 @@ function CopyBtn({ text, small }: { text: string; small?: boolean }) {
 }
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics">("campanas");
+  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics" | "leads">("campanas");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [calLink, setCalLink] = useState("");
   const [analytics, setAnalytics] = useState<{
     totalVisitas: number;
     porDia: { key: string; visitas: number }[];
@@ -82,14 +84,18 @@ export default function AdminDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [camps, sts, an] = await Promise.all([
+      const [camps, sts, an, lds, settings] = await Promise.all([
         api("/api/admin/campaigns"),
         api("/api/admin/sites"),
         api("/api/admin/analytics"),
+        api("/api/admin/leads"),
+        api("/api/admin/settings"),
       ]);
       setCampaigns(camps);
       setSites(sts);
       setAnalytics(an);
+      setLeads(lds);
+      setCalLink(settings.calLink || "");
     } catch (e) {
       console.error(e);
     } finally {
@@ -174,6 +180,36 @@ export default function AdminDashboard() {
     }
   };
 
+  const updateLead = async (id: string, patch: Partial<Lead>) => {
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)));
+    try {
+      await api(`/api/admin/leads/${id}`, { method: "PATCH", body: JSON.stringify(patch) });
+    } catch (e) {
+      alert("Error guardando: " + (e as Error).message);
+      load();
+    }
+  };
+
+  const deleteLead = async (id: string) => {
+    if (!confirm("¿Borrar este lead? No se puede deshacer.")) return;
+    try {
+      await api(`/api/admin/leads/${id}`, { method: "DELETE" });
+      setLeads((prev) => prev.filter((l) => l.id !== id));
+    } catch (e) {
+      alert("Error: " + (e as Error).message);
+    }
+  };
+
+  const generarGuion = async (id: string) => {
+    const data = await api(`/api/admin/leads/${id}/guion`, { method: "POST" });
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, guionGenerado: data.guion } : l)));
+    return data.guion as string;
+  };
+
+  const guardarCalLink = async () => {
+    await api("/api/admin/settings", { method: "PATCH", body: JSON.stringify({ calLink }) });
+  };
+
   const totales = campaigns.reduce(
     (acc, c) => ({
       visitas: acc.visitas + (c.visitas || 0),
@@ -212,6 +248,7 @@ export default function AdminDashboard() {
             {[
               { id: "generar", label: "✨ Generar" },
               { id: "campanas", label: "📋 Campañas" },
+              { id: "leads", label: "👥 Leads" },
               { id: "calendario", label: "📅 Calendario" },
               { id: "analytics", label: "📊 Analytics" },
               { id: "sitios", label: "🌐 Sitios" },
@@ -430,6 +467,17 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
+        )}
+        {tab === "leads" && (
+          <LeadsTab
+            leads={leads}
+            calLink={calLink}
+            setCalLink={setCalLink}
+            onGuardarCalLink={guardarCalLink}
+            onUpdate={updateLead}
+            onDelete={deleteLead}
+            onGenerarGuion={generarGuion}
+          />
         )}
         {tab === "analytics" && <AnalyticsTab analytics={analytics} campaigns={campaigns} />}
         {tab === "sitios" && <SitiosTab sites={sites} onAdd={addSite} onUpdate={updateSite} onDelete={deleteSite} />}
@@ -841,6 +889,184 @@ function SitiosTab({
         ))}
         {sites.length === 0 && <p className="text-slate-500 text-sm text-center py-10">No hay sitios cargados todavía.</p>}
       </div>
+    </div>
+  );
+}
+
+const LEAD_STATUS_CONFIG: Record<Lead["status"], { label: string; color: string }> = {
+  nuevo: { label: "🆕 Nuevo", color: "bg-cyan-500/20 text-cyan-400" },
+  quiere_agendar: { label: "📅 Quiere agendar", color: "bg-purple-500/20 text-purple-400" },
+  contactado: { label: "💬 Contactado", color: "bg-amber-500/20 text-amber-400" },
+  reunion_agendada: { label: "🗓️ Reunión agendada", color: "bg-blue-500/20 text-blue-400" },
+  cliente: { label: "✅ Cliente", color: "bg-emerald-500/20 text-emerald-400" },
+  descartado: { label: "❌ Descartado", color: "bg-slate-800 text-slate-500" },
+};
+
+function LeadsTab({
+  leads, calLink, setCalLink, onGuardarCalLink, onUpdate, onDelete, onGenerarGuion,
+}: {
+  leads: Lead[];
+  calLink: string;
+  setCalLink: (v: string) => void;
+  onGuardarCalLink: () => Promise<void>;
+  onUpdate: (id: string, patch: Partial<Lead>) => void;
+  onDelete: (id: string) => void;
+  onGenerarGuion: (id: string) => Promise<string>;
+}) {
+  const [guardando, setGuardando] = useState(false);
+  const [guardado, setGuardado] = useState(false);
+
+  const handleGuardar = async () => {
+    setGuardando(true);
+    try {
+      await onGuardarCalLink();
+      setGuardado(true);
+      setTimeout(() => setGuardado(false), 2000);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const nuevos = leads.filter((l) => l.status === "nuevo" || l.status === "quiere_agendar").length;
+
+  return (
+    <div className="space-y-6">
+      {/* CONFIG CAL.COM */}
+      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+        <h2 className="text-lg font-bold text-white mb-1">📅 Link de agendamiento (Cal.com)</h2>
+        <p className="text-sm text-slate-500 mb-4">
+          Después de dejar sus datos, el lead ve un botón para agendar una videollamada acá. Si no tenés cuenta,
+          creála gratis en <a href="https://cal.com" target="_blank" rel="noreferrer" className="text-cyan-400 underline">cal.com</a> y pegá tu link de reserva (ej: cal.com/tu-usuario/consulta).
+        </p>
+        <div className="flex gap-2">
+          <input className="input flex-1" placeholder="https://cal.com/tu-usuario/consulta" value={calLink} onChange={(e) => setCalLink(e.target.value)} />
+          <button onClick={handleGuardar} disabled={guardando} className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold px-5 py-2 rounded-lg whitespace-nowrap transition-colors">
+            {guardando ? "Guardando..." : guardado ? "✓ Guardado" : "Guardar"}
+          </button>
+        </div>
+      </div>
+
+      {/* RESUMEN */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+          <div className="text-2xl font-black text-cyan-400">{leads.length}</div>
+          <div className="text-xs text-white font-medium mt-1">Total de leads</div>
+        </div>
+        <div className="bg-slate-900/50 border border-amber-500/30 rounded-xl p-4">
+          <div className="text-2xl font-black text-amber-400">{nuevos}</div>
+          <div className="text-xs text-white font-medium mt-1">Sin gestionar</div>
+        </div>
+        <div className="bg-slate-900/50 border border-emerald-500/30 rounded-xl p-4">
+          <div className="text-2xl font-black text-emerald-400">{leads.filter((l) => l.status === "cliente").length}</div>
+          <div className="text-xs text-white font-medium mt-1">Convertidos a cliente</div>
+        </div>
+        <div className="bg-slate-900/50 border border-purple-500/30 rounded-xl p-4">
+          <div className="text-2xl font-black text-purple-400">{leads.filter((l) => l.status === "quiere_agendar" || l.status === "reunion_agendada").length}</div>
+          <div className="text-xs text-white font-medium mt-1">En proceso de reunión</div>
+        </div>
+      </div>
+
+      {/* LISTA */}
+      {leads.length === 0 ? (
+        <div className="text-center py-20 border border-dashed border-slate-800 rounded-2xl">
+          <p className="text-slate-400 mb-2">Todavía no llegó ningún lead.</p>
+          <p className="text-slate-600 text-sm">
+            Compartí el link <code className="text-slate-500">/lead?campaign=TU_SLUG</code> en tus campañas, o embebelo como formulario en tus landings.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {leads.map((l) => (
+            <LeadRow key={l.id} lead={l} onUpdate={onUpdate} onDelete={onDelete} onGenerarGuion={onGenerarGuion} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LeadRow({
+  lead: l, onUpdate, onDelete, onGenerarGuion,
+}: {
+  lead: Lead;
+  onUpdate: (id: string, patch: Partial<Lead>) => void;
+  onDelete: (id: string) => void;
+  onGenerarGuion: (id: string) => Promise<string>;
+}) {
+  const [generando, setGenerando] = useState(false);
+  const [mostrarGuion, setMostrarGuion] = useState(false);
+  const [error, setError] = useState("");
+  const statusInfo = LEAD_STATUS_CONFIG[l.status];
+
+  const handleGenerar = async () => {
+    setGenerando(true);
+    setError("");
+    try {
+      await onGenerarGuion(l.id);
+      setMostrarGuion(true);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setGenerando(false);
+    }
+  };
+
+  return (
+    <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-white font-bold">{l.nombre}</span>
+            <span className={["text-[10px] font-mono px-2 py-0.5 rounded-full", statusInfo.color].join(" ")}>{statusInfo.label}</span>
+          </div>
+          <div className="text-xs text-slate-500 mt-0.5">
+            {l.email && <span>✉️ {l.email} </span>}
+            {l.whatsapp && <span>📱 {l.whatsapp}</span>}
+          </div>
+          <div className="text-xs text-slate-600 mt-0.5">Vino de: {l.producto} ({l.origen})</div>
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={l.status}
+            onChange={(e) => onUpdate(l.id, { status: e.target.value as Lead["status"] })}
+            className="bg-slate-950 border border-slate-700 rounded-lg text-xs px-2 py-1.5 text-slate-300 outline-none"
+          >
+            {Object.entries(LEAD_STATUS_CONFIG).map(([key, cfg]) => <option key={key} value={key}>{cfg.label}</option>)}
+          </select>
+          <button onClick={() => onDelete(l.id)} className="text-slate-600 hover:text-red-400 text-xs px-2 py-1.5 transition-colors">Borrar</button>
+        </div>
+      </div>
+
+      {l.mensaje && (
+        <p className="text-sm text-slate-300 bg-slate-950 border border-slate-800 rounded-lg p-3 mt-2">&quot;{l.mensaje}&quot;</p>
+      )}
+
+      <div className="flex items-center gap-2 mt-3">
+        <button
+          onClick={l.guionGenerado ? () => setMostrarGuion((v) => !v) : handleGenerar}
+          disabled={generando}
+          className="text-xs font-semibold bg-slate-950 border border-slate-800 hover:border-cyan-500 hover:text-cyan-400 text-slate-400 px-3 py-1.5 rounded-lg transition-colors"
+        >
+          {generando ? "Generando…" : l.guionGenerado ? (mostrarGuion ? "▲ Ocultar guion" : "▼ Ver guion") : "✨ Generar guion de primer contacto"}
+        </button>
+        {l.guionGenerado && (
+          <button onClick={handleGenerar} disabled={generando} className="text-xs text-slate-600 hover:text-slate-400">
+            🔄 Regenerar
+          </button>
+        )}
+      </div>
+
+      {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+
+      {mostrarGuion && l.guionGenerado && (
+        <div className="mt-3 bg-slate-950 border border-cyan-500/30 rounded-lg p-4">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-[10px] font-mono text-slate-500 uppercase">Guion sugerido (con energía, invita a agendar)</span>
+            <CopyBtn small text={l.guionGenerado} />
+          </div>
+          <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">{l.guionGenerado}</p>
+        </div>
+      )}
     </div>
   );
 }

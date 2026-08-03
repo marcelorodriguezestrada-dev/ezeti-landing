@@ -313,7 +313,6 @@ export default function LandingPage() {
                 <a href={whatsapp} target="_blank" rel="noreferrer" className="rounded-full bg-cyan-500 px-5 py-2.5 font-semibold text-slate-950 transition hover:bg-cyan-400">Hablar con EZETI</a>
                 <a href={linkedin} target="_blank" rel="noreferrer" className="rounded-full border border-slate-700 px-5 py-2.5 font-semibold text-white transition hover:border-slate-500">LinkedIn</a>
                 <a href={email} className="rounded-full border border-slate-700 px-5 py-2.5 font-semibold text-white transition hover:border-slate-500">Email</a>
-                <a href="/admin" className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-5 py-2.5 font-semibold text-cyan-300 transition hover:border-cyan-400">Panel marketing</a>
               </div>
             </div>
             <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-8">

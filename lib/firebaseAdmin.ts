@@ -35,4 +35,12 @@ export function getVisitsCol() {
   return getDb().collection("visits");
 }
 
+export function getLeadsCol() {
+  return getDb().collection("leads");
+}
+
+export function getSettingsDoc() {
+  return getDb().collection("settings").doc("general");
+}
+
 export { admin };
