@@ -97,7 +97,9 @@ export default function LandingPage() {
             <a href="#nosotros" className="transition-colors hover:text-white">Nosotros</a>
           </nav>
           <a
-            href="/lead"
+            href={whatsapp}
+            target="_blank"
+            rel="noreferrer"
             className="flex items-center gap-2 rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-slate-950 transition-all hover:scale-105 hover:bg-cyan-400"
           >
             💬 Hablemos
