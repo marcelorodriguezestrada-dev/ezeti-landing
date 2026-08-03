@@ -32,7 +32,11 @@ export default function TVMode() {
 
   useEffect(() => {
     cargar();
-    const iv = setInterval(cargar, 60000);
+    // Antes cada 60s -- eso era lo que más gastaba la cuota gratis de
+    // Firestore (analytics recalculaba hasta 5000 lecturas por llamada).
+    // Con el caché de 4hs en /api/admin/analytics, no tiene sentido pedir
+    // más seguido que eso igual.
+    const iv = setInterval(cargar, 4 * 60 * 60 * 1000); // 4 horas
     return () => clearInterval(iv);
   }, [cargar]);
 
