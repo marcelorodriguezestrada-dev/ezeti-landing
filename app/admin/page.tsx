@@ -228,6 +228,9 @@ export default function AdminDashboard() {
               </button>
             ))}
           </nav>
+          <a href="/admin/tv" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-cyan-400 text-sm px-3 py-2 transition-colors font-semibold">
+            📺 Modo TV
+          </a>
           <button onClick={handleLogout} className="text-slate-500 hover:text-white text-sm px-3 py-2 transition-colors">
             Salir
           </button>
