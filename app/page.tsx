@@ -63,6 +63,7 @@ export default function LandingPage() {
   ];
 
   const products = [
+    { title: "ArquitectIA", desc: "Analiza logs, métricas y stack para diagnosticar mejoras de arquitectura: costos, escalabilidad, datos y procesos.", link: "/productos/arquitectia", badge: "Arquitectura & Costos Cloud" },
     { title: "TraceLink", desc: "Agente de IA que correlaciona tickets de soporte con trazas del sistema y señala la causa raíz en segundos.", link: "/productos/tracelink", badge: "Infraestructura & Observabilidad" },
     { title: "AuditIA", desc: "Auditoría forense con IA para detectar irregularidades, fraude y pagos sospechosos en minutos.", link: auditiaDemo, badge: "Fintech & Consorcios" },
     { title: "PaceAI", desc: "Plataforma de coaching deportivo con planes personalizados, métricas y rutinas generadas por IA.", link: paceia, badge: "Product + IA" },
