@@ -264,6 +264,78 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section id="suite-infra" className="px-6 py-24">
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-12 max-w-3xl">
+              <span className="text-xs font-mono uppercase tracking-[0.3em] text-indigo-400">Suite de Infraestructura & Observabilidad</span>
+              <h2 className="mt-3 text-3xl font-black text-white sm:text-4xl">Un sistema, dos agentes: uno reacciona, el otro previene</h2>
+              <p className="mt-4 text-slate-400 leading-7">
+                Cuando algo falla, <span className="text-amber-400 font-semibold">TraceLink</span> encuentra la causa en segundos.
+                Antes de que falle, <span className="text-indigo-400 font-semibold">ArquitectIA</span> audita queries, costos, escalabilidad
+                y calidad de datos, y arma un plan priorizado. En los dos casos la IA diagnostica — el equipo técnico decide qué implementar.
+              </p>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
+              {/* TraceLink card */}
+              <a href="/productos/tracelink" target="_blank" rel="noreferrer"
+                 className="group rounded-[1.5rem] border border-amber-500/25 bg-gradient-to-br from-amber-500/[0.07] to-slate-950 p-7 transition-all hover:border-amber-500/50">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+                  <span className="text-xs font-mono uppercase tracking-[0.25em] text-amber-400">Reactivo</span>
+                </div>
+                <h3 className="text-2xl font-black text-white">TraceLink</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-400">
+                  Pegás un ticket de soporte, el agente lo cruza contra el log de trazas del sistema y señala
+                  exactamente qué operación técnica falló — filtrando el ruido irrelevante.
+                </p>
+                <div className="mt-5 text-xs font-mono text-slate-600 group-hover:text-amber-400 transition-colors">
+                  ver demo →
+                </div>
+              </a>
+
+              {/* connector */}
+              <div className="hidden lg:flex flex-col items-center justify-center gap-2 px-2">
+                <div className="h-full w-px bg-gradient-to-b from-amber-500/40 via-slate-700 to-indigo-500/40" />
+                <span className="font-mono text-[10px] text-slate-600 rotate-90 whitespace-nowrap">+ combinado</span>
+                <div className="h-full w-px bg-gradient-to-b from-amber-500/40 via-slate-700 to-indigo-500/40" />
+              </div>
+
+              {/* ArquitectIA card */}
+              <a href="/productos/arquitectia" target="_blank" rel="noreferrer"
+                 className="group rounded-[1.5rem] border border-indigo-500/25 bg-gradient-to-br from-indigo-500/[0.07] to-slate-950 p-7 transition-all hover:border-indigo-500/50">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <span className="h-2.5 w-2.5 rounded-full bg-indigo-400" />
+                  <span className="text-xs font-mono uppercase tracking-[0.25em] text-indigo-400">Proactivo</span>
+                </div>
+                <h3 className="text-2xl font-black text-white">ArquitectIA</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-400">
+                  Describís tu stack, logs y métricas. El agente audita costos de queries, escalabilidad en la nube,
+                  calidad de datos y procesos, y devuelve un plan de mejora priorizado.
+                </p>
+                <div className="mt-5 text-xs font-mono text-slate-600 group-hover:text-indigo-400 transition-colors">
+                  ver demo →
+                </div>
+              </a>
+            </div>
+
+            <div className="mt-8 rounded-[1.5rem] border border-slate-800 bg-slate-900/40 p-7 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <div className="text-xs font-mono uppercase tracking-[0.25em] text-slate-500">El resultado combinado</div>
+                <p className="mt-2 text-slate-300 leading-7 max-w-2xl">
+                  Menos tiempo diagnosticando incidentes, menos plata quemada en queries mal optimizadas, y un plan
+                  claro de qué mejorar antes de que se convierta en un problema. Todo queda en manos del equipo técnico
+                  para decidir e implementar — la IA nunca toca producción sola.
+                </p>
+              </div>
+              <a href={whatsapp} target="_blank" rel="noreferrer"
+                 className="shrink-0 rounded-full bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-slate-200 text-center">
+                Quiero esta suite para mi infraestructura
+              </a>
+            </div>
+          </div>
+        </section>
+
         <section id="metodologia" className="px-6 py-24">
           <div className="mx-auto max-w-7xl">
             <div className="mb-12 max-w-3xl">
