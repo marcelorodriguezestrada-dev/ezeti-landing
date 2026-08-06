@@ -535,10 +535,29 @@ function CampaignCard({
 }) {
   const [showPosts, setShowPosts] = useState(false);
   const [showUtm, setShowUtm] = useState(false);
+  const [showGaleria, setShowGaleria] = useState(false);
+  const [galeria, setGaleria] = useState<MediaImage[] | null>(null);
+  const [galeriaLoading, setGaleriaLoading] = useState(false);
   const [metrics, setMetrics] = useState({ likes: campaign.likes, comentarios: campaign.comentarios, compartidos: campaign.compartidos });
   const [dirty, setDirty] = useState(false);
   const plataformaInfo = PLATAFORMAS.find((p) => p.value === campaign.plataforma);
   const statusInfo = STATUS_CONFIG[campaign.status];
+
+  async function toggleGaleria() {
+    const next = !showGaleria;
+    setShowGaleria(next);
+    if (next && galeria === null) {
+      setGaleriaLoading(true);
+      try {
+        const res = await fetch("/api/admin/media");
+        setGaleria(await res.json());
+      } catch {
+        setGaleria([]);
+      } finally {
+        setGaleriaLoading(false);
+      }
+    }
+  }
 
   return (
     <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
@@ -584,7 +603,44 @@ function CampaignCard({
             if (e.target.value !== (campaign.imagenFondo || "")) onUpdate({ imagenFondo: e.target.value.trim() });
           }}
         />
+        <button
+          type="button"
+          onClick={toggleGaleria}
+          className="text-[10px] font-semibold text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 whitespace-nowrap flex-shrink-0"
+        >
+          {showGaleria ? "▲ Cerrar" : "🖼️ Elegir de galería"}
+        </button>
       </div>
+
+      {showGaleria && (
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 mb-4">
+          {galeriaLoading ? (
+            <p className="text-xs text-slate-500">Cargando imágenes subidas…</p>
+          ) : !galeria || galeria.length === 0 ? (
+            <p className="text-xs text-slate-500">
+              Todavía no subiste fotos en la pestaña <strong className="text-slate-400">Imágenes</strong>. Subí una ahí primero y va a aparecer acá para elegirla.
+            </p>
+          ) : (
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+              {galeria.map((img) => (
+                <button
+                  key={img.id}
+                  type="button"
+                  onClick={() => { onUpdate({ imagenFondo: img.url }); setShowGaleria(false); }}
+                  className={[
+                    "aspect-[4/5] rounded-lg overflow-hidden border-2 transition-colors",
+                    campaign.imagenFondo === img.url ? "border-cyan-500" : "border-transparent hover:border-slate-600",
+                  ].join(" ")}
+                  title="Usar esta foto de fondo"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img.thumbUrl} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex gap-2 mb-4">
         <button onClick={() => setShowPosts((v) => !v)}

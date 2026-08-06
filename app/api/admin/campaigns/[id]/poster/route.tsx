@@ -54,7 +54,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const ctaText = isTecnologia ? "#062024" : "#1A1206";
 
   const texto = post.texto.length > 165 ? post.texto.slice(0, 162).trim() + "…" : post.texto;
-  const objetivo = campaign.objetivo.length > 95 ? campaign.objetivo.slice(0, 92).trim() + "…" : campaign.objetivo;
+  // El titular grande de la pieza tiene que ser el gancho pensado para el cliente (post.titulo).
+  // campaign.objetivo es una meta interna de marketing ("generar consultas de nuevos clientes"),
+  // nunca debería ser lo que lee el público -- se usa acá solo como fallback para campañas viejas
+  // generadas antes de que existiera el campo "titulo".
+  const tituloRaw = post.titulo || campaign.objetivo || campaign.producto;
+  const titulo = tituloRaw.length > 95 ? tituloRaw.slice(0, 92).trim() + "…" : tituloRaw;
   const hashtags = (post.hashtags || []).slice(0, 5);
 
   const { mono, bold, regular } = await loadFonts();
@@ -127,7 +132,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         {/* cuerpo */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", fontFamily: "Mono", fontWeight: 700, fontSize: 54, color: "#F1F5F9", lineHeight: 1.18 }}>
-            {objetivo}
+            {titulo}
           </div>
           <div style={{ display: "flex", marginTop: 26, fontSize: 27, color: "#94A3B8", lineHeight: 1.5, maxWidth: 900 }}>
             {texto}

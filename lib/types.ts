@@ -30,6 +30,7 @@ export interface Lead {
 export type Plataforma = "instagram" | "linkedin" | "facebook" | "tiktok";
 
 export interface CampaignPost {
+  titulo: string; // gancho/titular corto pensado para la pieza gráfica (NO el objetivo interno de la campaña)
   texto: string;
   hashtags: string[];
   formato: string; // "Feed", "Story", "Reel", "Carrusel", "Video corto"...

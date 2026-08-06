@@ -40,12 +40,13 @@ Nunca inventás cifras de resultados, testimonios o clientes que no te dieron.
 Devolvés ÚNICAMENTE JSON válido, sin texto ni markdown alrededor, con esta forma EXACTA:
 {
   "posts": [
-    { "texto": "...", "hashtags": ["...", "..."], "formato": "Feed", "horaOptima": "09:00", "cta": "...", "tipVisual": "descripción breve de qué imagen/video acompañaría este post" }
+    { "titulo": "...", "texto": "...", "hashtags": ["...", "..."], "formato": "Feed", "horaOptima": "09:00", "cta": "...", "tipVisual": "descripción breve de qué imagen/video acompañaría este post" }
   ],
   "calendario": [
     { "dia": 0, "postIndex": 0, "nota": "por qué publicar este post primero" }
   ]
 }
+"titulo" es el titular grande que va a leer el cliente en la pieza gráfica (imagen de Instagram/Story) -- máximo 8 palabras, un gancho real y autocontenido (no una meta interna de marketing, no repitas el objetivo de la campaña palabra por palabra). Cada post necesita un "titulo" distinto, coherente con su "texto".
 "dia" es el offset en días desde hoy (0 = hoy). Distribuí los posts a lo largo de 10-14 días, no todos el mismo día.`
       : `Sos estratega de marketing digital y copywriter senior para redes sociales en LATAM/Argentina.
 Armás campañas completas y listas para ejecutar: no un solo post suelto, sino una secuencia coherente de posts que juntos cuentan una historia (ej: problema → enfoque → prueba/ejemplo → oferta → urgencia), sin repetir la misma idea con sinónimos.
@@ -53,12 +54,13 @@ Nunca inventás cifras de resultados, testimonios o clientes que no te dieron.
 Devolvés ÚNICAMENTE JSON válido, sin texto ni markdown alrededor, con esta forma EXACTA:
 {
   "posts": [
-    { "texto": "...", "hashtags": ["...", "..."], "formato": "Feed", "horaOptima": "09:00", "cta": "...", "tipVisual": "descripción breve de qué imagen/video acompañaría este post" }
+    { "titulo": "...", "texto": "...", "hashtags": ["...", "..."], "formato": "Feed", "horaOptima": "09:00", "cta": "...", "tipVisual": "descripción breve de qué imagen/video acompañaría este post" }
   ],
   "calendario": [
     { "dia": 0, "postIndex": 0, "nota": "por qué publicar este post primero" }
   ]
 }
+"titulo" es el titular grande que va a leer el cliente en la pieza gráfica (imagen de Instagram/Story) -- máximo 8 palabras, un gancho real y autocontenido (no una meta interna de marketing, no repitas el objetivo de la campaña palabra por palabra). Cada post necesita un "titulo" distinto, coherente con su "texto".
 "dia" es el offset en días desde hoy (0 = hoy). Distribuí los posts a lo largo de 10-14 días, no todos el mismo día.`;
 
     const userPrompt = `Generá una campaña de ${cantidad} posts para ${plataforma}.
@@ -70,7 +72,7 @@ Tono deseado: ${tono || "profesional y cercano"}
 
 Lineamiento de formato para esta plataforma: ${lineamiento}
 
-Cada post necesita: texto, 4-6 hashtags (sin el símbolo #), formato, horaOptima (mejor horario estimado para publicar según el hábito general de la plataforma), cta, y tipVisual.
+Cada post necesita: titulo (el gancho corto que se va a ver grande en la imagen, distinto en cada post), texto, 4-6 hashtags (sin el símbolo #), formato, horaOptima (mejor horario estimado para publicar según el hábito general de la plataforma), cta, y tipVisual.
 El array "calendario" debe tener exactamente ${cantidad} entradas, una por post, en el orden en que conviene publicarlos.
 
 Importante sobre el link: NO escribas ninguna URL dentro de "texto" -- el link de la campaña se agrega aparte, siempre, automáticamente. En "cta" simplemente indicá la acción (ej: "Escribinos para más info", "Conocé más acá 👇"), sin mencionar "bio" ni pegar la URL vos.`;
