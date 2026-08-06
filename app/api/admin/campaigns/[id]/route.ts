@@ -14,6 +14,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       "likes",
       "comentarios",
       "compartidos",
+      "imagenFondo",
     ] as const;
 
     const update: Record<string, unknown> = {};

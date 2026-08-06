@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect, useCallback, useMemo } from "react";
-import type { Campaign, Plataforma, Site, Lead } from "@/lib/types";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import type { Campaign, Plataforma, Site, Lead, MediaImage } from "@/lib/types";
 
 const PLATAFORMAS: { value: Plataforma; label: string; icon: string }[] = [
   { value: "instagram", label: "Instagram", icon: "📸" },
@@ -64,7 +64,7 @@ function CopyBtn({ text, small }: { text: string; small?: boolean }) {
 }
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics" | "leads">("campanas");
+  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics" | "leads" | "imagenes">("campanas");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -265,6 +265,7 @@ export default function AdminDashboard() {
               { id: "calendario", label: "📅 Calendario" },
               { id: "analytics", label: "📊 Analytics" },
               { id: "sitios", label: "🌐 Sitios" },
+              { id: "imagenes", label: "🖼️ Imágenes" },
             ].map((t) => (
               <button
                 key={t.id}
@@ -494,6 +495,7 @@ export default function AdminDashboard() {
         )}
         {tab === "analytics" && <AnalyticsTab analytics={analytics} campaigns={campaigns} />}
         {tab === "sitios" && <SitiosTab sites={sites} onAdd={addSite} onUpdate={updateSite} onDelete={deleteSite} />}
+        {tab === "imagenes" && <ImagenesTab />}
       </main>
 
       <style jsx global>{`
@@ -564,6 +566,24 @@ function CampaignCard({
         <button onClick={onCopyLink} className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 whitespace-nowrap">
           {copied ? "✓ Copiado" : "📋 Copiar"}
         </button>
+      </div>
+
+      <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 mb-4">
+        {campaign.imagenFondo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={campaign.imagenFondo} alt="" className="w-9 h-9 rounded object-cover border border-slate-800 flex-shrink-0" />
+        ) : (
+          <span className="w-9 h-9 rounded bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-700 text-xs flex-shrink-0">🖼️</span>
+        )}
+        <input
+          type="text"
+          defaultValue={campaign.imagenFondo || ""}
+          placeholder="URL de una foto real (opcional) — se usa de fondo en la imagen generada"
+          className="flex-1 bg-transparent text-xs text-slate-300 outline-none placeholder:text-slate-600"
+          onBlur={(e) => {
+            if (e.target.value !== (campaign.imagenFondo || "")) onUpdate({ imagenFondo: e.target.value.trim() });
+          }}
+        />
       </div>
 
       <div className="flex gap-2 mb-4">
@@ -1252,6 +1272,161 @@ function AnalyticsTab({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+const PRESETS_IMG = [
+  { id: "feed", label: "Feed (1080×1350)" },
+  { id: "story", label: "Story / Reel (1080×1920)" },
+  { id: "cuadrado", label: "Cuadrado (1080×1080)" },
+  { id: "original", label: "Original (solo comprimir)" },
+];
+
+function ImagenesTab() {
+  const [images, setImages] = useState<MediaImage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [preset, setPreset] = useState("feed");
+  const [error, setError] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/media");
+      const data = await res.json();
+      setImages(data);
+    } catch {
+      setError("No se pudo cargar la biblioteca de imágenes.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function handleFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    setError("");
+    try {
+      for (const file of Array.from(files)) {
+        const form = new FormData();
+        form.append("file", file);
+        form.append("preset", preset);
+        const res = await fetch("/api/admin/media", { method: "POST", body: form });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Error al subir la imagen.");
+        setImages((prev) => [data, ...prev]);
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleDelete(id: string) {
+    setImages((prev) => prev.filter((i) => i.id !== id));
+    try {
+      await fetch(`/api/admin/media/${id}`, { method: "DELETE" });
+    } catch {
+      load(); // si falló, volvemos a traer la lista real
+    }
+  }
+
+  function copyUrl(img: MediaImage) {
+    navigator.clipboard.writeText(img.url);
+    setCopiedId(img.id);
+    setTimeout(() => setCopiedId(null), 1500);
+  }
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div>
+          <h2 className="text-xl font-bold text-white mb-1">Biblioteca de imágenes</h2>
+          <p className="text-sm text-slate-500">Subí fotos reales, se optimizan automáticamente y quedan listas para pegar como fondo en tus campañas.</p>
+        </div>
+      </div>
+
+      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 mb-6">
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          <span className="text-xs font-semibold text-slate-400">Optimizar para:</span>
+          {PRESETS_IMG.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setPreset(p.id)}
+              className={[
+                "text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors",
+                preset === p.id ? "bg-cyan-500 text-slate-950 border-cyan-500" : "text-slate-400 border-slate-800 hover:text-white",
+              ].join(" ")}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        <label
+          className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-800 hover:border-cyan-500/50 rounded-xl py-10 cursor-pointer transition-colors"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
+        >
+          <span className="text-3xl">{uploading ? "⏳" : "🖼️"}</span>
+          <span className="text-sm text-slate-400">
+            {uploading ? "Subiendo y optimizando…" : "Arrastrá una foto acá o hacé click para elegir"}
+          </span>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => handleFiles(e.target.files)}
+            disabled={uploading}
+          />
+        </label>
+        {error && <p className="text-xs text-red-400 mt-3">{error}</p>}
+      </div>
+
+      {loading ? (
+        <p className="text-sm text-slate-500">Cargando…</p>
+      ) : images.length === 0 ? (
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-10 text-center text-slate-500 text-sm">
+          Todavía no subiste ninguna imagen.
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {images.map((img) => (
+            <div key={img.id} className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={img.thumbUrl} alt="" className="w-full aspect-[4/5] object-cover" />
+              <div className="p-2.5">
+                <p className="text-[10px] font-mono text-slate-600 mb-2">
+                  {img.width}×{img.height} · {(img.sizeBytes / 1024).toFixed(0)}KB
+                </p>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => copyUrl(img)}
+                    className="flex-1 text-[10px] font-semibold text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-lg py-1.5"
+                  >
+                    {copiedId === img.id ? "✓ Copiada" : "📋 Copiar URL"}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(img.id)}
+                    className="text-[10px] text-slate-600 hover:text-red-400 px-2"
+                  >
+                    Borrar
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

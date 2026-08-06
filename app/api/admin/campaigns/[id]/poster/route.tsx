@@ -75,19 +75,42 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           fontFamily: "Body",
         }}
       >
-        {/* glow ambiental */}
-        <div
-          style={{
-            position: "absolute",
-            top: -160,
-            left: 220,
-            width: 700,
-            height: 700,
-            borderRadius: 350,
-            background: `radial-gradient(circle, ${accentSoft} 0%, rgba(11,17,32,0) 70%)`,
-            display: "flex",
-          }}
-        />
+        {/* fondo: foto real si la campaña tiene una cargada, si no queda el fondo liso + glow */}
+        {campaign.imagenFondo && (
+          <img
+            src={campaign.imagenFondo}
+            alt=""
+            width={width}
+            height={height}
+            style={{ position: "absolute", inset: 0, objectFit: "cover", width: "100%", height: "100%" }}
+          />
+        )}
+        {campaign.imagenFondo && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              background: "linear-gradient(180deg, rgba(11,17,32,0.55) 0%, rgba(11,17,32,0.75) 55%, rgba(11,17,32,0.97) 100%)",
+            }}
+          />
+        )}
+
+        {/* glow ambiental -- solo cuando no hay foto real de fondo */}
+        {!campaign.imagenFondo && (
+          <div
+            style={{
+              position: "absolute",
+              top: -160,
+              left: 220,
+              width: 700,
+              height: 700,
+              borderRadius: 350,
+              background: `radial-gradient(circle, ${accentSoft} 0%, rgba(11,17,32,0) 70%)`,
+              display: "flex",
+            }}
+          />
+        )}
 
         {/* eyebrow */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -98,7 +121,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         </div>
 
         <div style={{ display: "flex", flexGrow: 1, alignItems: "center", justifyContent: "center" }}>
-          <div style={{ display: "flex", fontSize: 220, opacity: 0.14 }}>{platformIcon}</div>
+          {!campaign.imagenFondo && <div style={{ display: "flex", fontSize: 220, opacity: 0.14 }}>{platformIcon}</div>}
         </div>
 
         {/* cuerpo */}

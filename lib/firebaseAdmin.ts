@@ -39,6 +39,10 @@ export function getLeadsCol() {
   return getDb().collection("leads");
 }
 
+export function getImagesCol() {
+  return getDb().collection("images");
+}
+
 export function getSettingsDoc() {
   return getDb().collection("settings").doc("general");
 }

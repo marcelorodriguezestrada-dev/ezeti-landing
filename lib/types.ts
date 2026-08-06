@@ -49,6 +49,18 @@ export interface UtmLink {
   url: string;
 }
 
+export interface MediaImage {
+  id: string;
+  url: string;
+  thumbUrl: string;
+  deleteUrl: string; // link que da ImgBB para borrarla desde ahí (best-effort, ver nota en el endpoint DELETE)
+  width: number;
+  height: number;
+  sizeBytes: number;
+  preset: string; // "feed" | "story" | "cuadrado" | "original"
+  createdAt: number;
+}
+
 export interface Campaign {
   id: string;
   producto: string;
@@ -61,6 +73,7 @@ export interface Campaign {
   calendario: CalendarioItem[];
   utmLinks: UtmLink[];
   destinoUrl: string;
+  imagenFondo?: string; // URL de una foto real para usar de fondo en las piezas de marketing generadas
   slug: string;
   status: "borrador" | "activa" | "pausada" | "finalizada";
   visitas: number;
