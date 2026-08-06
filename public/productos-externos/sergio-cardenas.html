@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sergio Cárdenas — Abogado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B2A44;
+    --navy-2:#233757;
+    --navy-3:#2E4570;
+    --gold:#B8873F;
+    --gold-light:#D9B677;
+    --cream:#F6F1E7;
+    --cream-2:#ECE3D0;
+    --ink:#221F1A;
+    --andean:#A23B3B;
+    --green-ok:#4B7A5B;
+    --line:rgba(34,31,26,0.16);
+    --serif:'Fraunces', serif;
+    --sans:'IBM Plex Sans', sans-serif;
+    --mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--gold-light); color:var(--navy);}
+  a{color:inherit;}
+
+  /* --------- andean woven accent stripe (signature motif, used sparingly) --------- */
+  .weave-stripe{
+    height:10px;
+    width:100%;
+    background: repeating-linear-gradient(
+      45deg,
+      var(--gold) 0px, var(--gold) 6px,
+      var(--andean) 6px, var(--andean) 12px,
+      var(--navy) 12px, var(--navy) 18px
+    );
+  }
+
+  /* --------- header --------- */
+  header{
+    background:var(--navy);
+    color:var(--cream);
+    padding:18px 28px;
+    display:flex; justify-content:space-between; align-items:center;
+    position:sticky; top:0; z-index:50;
+  }
+  .brand{
+    font-family:var(--serif); font-weight:600; font-size:19px; letter-spacing:0.2px;
+    display:flex; flex-direction:column; line-height:1.15;
+  }
+  .brand small{font-family:var(--mono); font-size:10.5px; letter-spacing:1.5px; color:var(--gold-light); text-transform:uppercase; font-weight:500; margin-top:3px;}
+  nav a{
+    font-family:var(--sans); font-size:13.5px; color:rgba(246,241,231,0.8);
+    text-decoration:none; margin-left:26px;
+  }
+  nav a:hover{color:var(--cream);}
+  .btn-agendar{
+    font-family:var(--sans); font-weight:600; font-size:13.5px;
+    background:var(--gold); color:var(--navy);
+    padding:11px 20px; border-radius:2px; text-decoration:none;
+  }
+
+  /* --------- hero: expediente / dossier --------- */
+  .hero{
+    background:var(--navy);
+    color:var(--cream);
+    padding:64px 28px 0;
+    display:flex; justify-content:center;
+  }
+  .hero-inner{
+    max-width:1080px; width:100%;
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:50px;
+    align-items:center;
+    padding-bottom:64px;
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:11.5px; letter-spacing:2px;
+    text-transform:uppercase; color:var(--gold-light); margin-bottom:16px;
+  }
+  h1{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:clamp(30px,4.2vw,50px);
+    line-height:1.08;
+    margin:0 0 20px;
+  }
+  h1 em{font-style:italic; color:var(--gold-light); font-weight:600;}
+  .hero-sub{
+    font-size:16px; line-height:1.65; color:rgba(246,241,231,0.78);
+    max-width:460px; margin-bottom:30px;
+  }
+  .cta-row{display:flex; gap:14px; flex-wrap:wrap;}
+  .btn-primary{
+    font-family:var(--sans); font-weight:600; font-size:14.5px;
+    background:var(--gold); color:var(--navy);
+    border:none; padding:15px 26px; border-radius:2px; cursor:pointer;
+    text-decoration:none; display:inline-block;
+  }
+  .btn-ghost{
+    font-family:var(--sans); font-size:14.5px; color:var(--cream);
+    border:1px solid rgba(246,241,231,0.35);
+    padding:15px 22px; border-radius:2px; text-decoration:none;
+  }
+
+  /* --------- folder card --------- */
+  .folder{
+    background:var(--cream);
+    color:var(--ink);
+    border-radius:2px;
+    box-shadow:0 30px 70px -25px rgba(0,0,0,0.6);
+    position:relative;
+    padding-top:0;
+  }
+  .folder-tab{
+    background:var(--gold);
+    color:var(--navy);
+    font-family:var(--mono); font-weight:600; font-size:11px; letter-spacing:1px;
+    display:inline-block;
+    padding:8px 16px;
+    border-radius:2px 2px 0 0;
+    margin-left:24px;
+    transform:translateY(1px);
+  }
+  .folder-body{padding:22px 26px 26px;}
+  .folder-row{
+    display:flex; justify-content:space-between;
+    font-family:var(--mono); font-size:12.5px;
+    padding:9px 0; border-bottom:1px dotted var(--line);
+  }
+  .folder-row:last-child{border-bottom:none;}
+  .folder-row span:first-child{color:#655c49;}
+  .folder-seal{
+    margin-top:18px;
+    border:2px solid var(--green-ok); color:var(--green-ok);
+    font-family:var(--mono); font-weight:700; font-size:11px; letter-spacing:1px;
+    display:inline-block; padding:6px 12px; border-radius:4px; transform:rotate(-4deg);
+  }
+
+  /* --------- sections --------- */
+  section{padding:78px 28px; display:flex; justify-content:center;}
+  .section-inner{max-width:1080px; width:100%;}
+  .section-eyebrow{
+    font-family:var(--mono); font-size:11.5px; letter-spacing:2px;
+    text-transform:uppercase; color:var(--andean); margin-bottom:10px;
+  }
+  h2{
+    font-family:var(--serif); font-weight:600;
+    font-size:clamp(24px,3vw,32px); margin:0 0 14px; color:var(--navy);
+  }
+  .section-lead{font-size:15px; color:#544c3d; max-width:620px; line-height:1.6; margin-bottom:42px;}
+
+  /* --------- trust bar --------- */
+  .trust-bar{
+    background:var(--cream-2);
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  }
+  .trust-inner{
+    max-width:1080px; margin:0 auto; padding:26px 28px;
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:24px;
+    text-align:center;
+  }
+  .trust-item .num{font-family:var(--serif); font-weight:700; font-size:28px; color:var(--navy);}
+  .trust-item .lbl{font-family:var(--mono); font-size:11px; letter-spacing:0.5px; color:#655c49; margin-top:4px; text-transform:uppercase;}
+
+  /* --------- servicios --------- */
+  .services-grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:1px; background:var(--line); border:1px solid var(--line);
+  }
+  .service-item{
+    background:var(--cream); padding:26px 22px;
+  }
+  .service-item .idx{font-family:var(--mono); font-size:11px; color:var(--gold); margin-bottom:14px; font-weight:600;}
+  .service-item h3{font-family:var(--serif); font-weight:600; font-size:17px; margin:0 0 8px; color:var(--navy);}
+  .service-item p{font-size:13.5px; line-height:1.55; color:#544c3d; margin:0;}
+
+  /* --------- cómo funciona --------- */
+  .steps{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:28px;}
+  .step{position:relative; padding-left:2px;}
+  .step .stepnum{
+    font-family:var(--serif); font-weight:700; font-size:34px; color:var(--gold-light);
+    -webkit-text-stroke:1.5px var(--navy); color:transparent;
+    margin-bottom:10px; display:block;
+  }
+  .step h3{font-family:var(--sans); font-weight:700; font-size:15.5px; margin:0 0 6px; color:var(--navy);}
+  .step p{font-size:13.5px; color:#544c3d; line-height:1.55; margin:0;}
+
+  /* --------- testimonios --------- */
+  .dark-section{background:var(--navy); color:var(--cream);}
+  .dark-section h2{color:var(--cream);}
+  .dark-section .section-lead{color:rgba(246,241,231,0.7);}
+  .testi-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:22px;}
+  .testi{
+    background:var(--navy-2); border-left:3px solid var(--gold);
+    padding:24px 22px; border-radius:2px;
+  }
+  .testi p.quote{font-family:var(--serif); font-style:italic; font-size:15.5px; line-height:1.55; margin:0 0 16px; color:var(--cream);}
+  .testi .who{font-family:var(--mono); font-size:11.5px; color:var(--gold-light); letter-spacing:0.3px;}
+
+  /* --------- formulario de consulta --------- */
+  .form-wrap{
+    background:var(--cream);
+    max-width:640px; margin:0 auto;
+    border-radius:2px;
+    box-shadow:0 30px 70px -28px rgba(0,0,0,0.55);
+    overflow:hidden;
+  }
+  .form-head{
+    background:var(--navy); color:var(--cream);
+    padding:18px 26px; font-family:var(--mono); font-size:12px; letter-spacing:0.5px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .form-head .blink{width:7px;height:7px;border-radius:50%;background:var(--green-ok); animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.25;}}
+  form{padding:26px;}
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block; font-family:var(--mono); font-size:11px; letter-spacing:0.5px;
+    text-transform:uppercase; color:#655c49; margin-bottom:6px;
+  }
+  .field input, .field select, .field textarea{
+    width:100%; font-family:var(--sans); font-size:14px;
+    border:1px solid var(--line); border-radius:2px; padding:11px 12px;
+    background:#fff; color:var(--ink);
+  }
+  .field textarea{resize:vertical; min-height:90px;}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--gold);}
+  .form-note{font-size:12px; color:#655c49; margin:0 0 18px; line-height:1.5;}
+  .btn-submit{
+    width:100%; font-family:var(--sans); font-weight:700; font-size:14.5px;
+    background:var(--navy); color:var(--cream);
+    border:none; padding:15px; border-radius:2px; cursor:pointer;
+  }
+  .btn-submit:disabled{opacity:0.6; cursor:default;}
+  .confirm-box{
+    display:none;
+    background:#eef5f0; border:1px solid var(--green-ok);
+    color:#2f5a3f; padding:18px 20px; border-radius:2px;
+    font-family:var(--mono); font-size:12.5px; line-height:1.6;
+    margin-top:16px;
+  }
+  .confirm-box strong{display:block; font-size:13.5px; margin-bottom:4px;}
+
+  /* --------- footer --------- */
+  footer{
+    background:var(--navy-2); color:rgba(246,241,231,0.75);
+    padding:44px 28px 26px; display:flex; justify-content:center;
+    font-family:var(--mono); font-size:12.5px;
+  }
+  .footer-inner{max-width:1080px; width:100%; display:flex; flex-wrap:wrap; justify-content:space-between; gap:24px;}
+  .footer-inner .brand{color:var(--cream); margin-bottom:8px;}
+  .foot-col h4{font-family:var(--sans); font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--gold-light); margin:0 0 10px;}
+  .foot-col p{margin:4px 0; line-height:1.6;}
+
+  @media (max-width:860px){
+    .hero-inner{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="weave-stripe"></div>
+<header>
+  <div class="brand">Sergio Cárdenas<small>Abogado · Comunidad Boliviana en Argentina</small></div>
+  <nav>
+    <a href="#servicios">Trámites</a>
+    <a href="#testimonios">Testimonios</a>
+    <a href="#consulta" class="btn-agendar">Agendar consulta</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">Asesoría legal en español, cerca tuyo</div>
+      <h1>Tu trámite,<br>resuelto por alguien<br><em>que entiende tu historia.</em></h1>
+      <p class="hero-sub">Sergio acompaña a la comunidad boliviana en Argentina en trámites migratorios, laborales, familiares y comerciales — con claridad, sin vueltas y sin tecnicismos que no entendés.</p>
+      <div class="cta-row">
+        <a class="btn-primary" href="#consulta">Agendar mi consulta</a>
+        <a class="btn-ghost" href="#servicios">Ver trámites</a>
+      </div>
+    </div>
+    <div class="folder">
+      <div class="folder-tab">EXPEDIENTE · NUEVA CONSULTA</div>
+      <div class="folder-body">
+        <div class="folder-row"><span>Idioma de atención</span><span>Español</span></div>
+        <div class="folder-row"><span>Zona de atención</span><span>Argentina</span></div>
+        <div class="folder-row"><span>Primera consulta</span><span>Se agenda online</span></div>
+        <div class="folder-row"><span>Áreas cubiertas</span><span>Migratorio · Laboral · Familia · Comercial</span></div>
+        <div class="folder-seal">MATRÍCULA VERIFICADA</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="trust-bar">
+  <div class="trust-inner">
+    <div class="trust-item"><div class="num">+300</div><div class="lbl">Familias asesoradas</div></div>
+    <div class="trust-item"><div class="num">4</div><div class="lbl">Áreas de práctica</div></div>
+    <div class="trust-item"><div class="num">100%</div><div class="lbl">Atención en español</div></div>
+    <div class="trust-item"><div class="num">24hs</div><div class="lbl">Respuesta a tu consulta</div></div>
+  </div>
+</div>
+
+<section id="servicios">
+  <div class="section-inner">
+    <div class="section-eyebrow">Trámites que resolvemos</div>
+    <h2>Un solo estudio, varios frentes</h2>
+    <p class="section-lead">No importa qué papel te falta o qué trámite no avanza: contanos tu caso y te decimos con qué contamos para resolverlo.</p>
+    <div class="services-grid">
+      <div class="service-item">
+        <div class="idx">01</div>
+        <h3>Migratorio</h3>
+        <p>Radicación, DNI, renovaciones y regularización de tu situación migratoria en Argentina.</p>
+      </div>
+      <div class="service-item">
+        <div class="idx">02</div>
+        <h3>Laboral</h3>
+        <p>Reclamos por despido, indemnizaciones y asesoría sobre tus derechos como trabajador.</p>
+      </div>
+      <div class="service-item">
+        <div class="idx">03</div>
+        <h3>Familia</h3>
+        <p>Divorcios, régimen de visitas, alimentos y sucesiones, con acompañamiento humano.</p>
+      </div>
+      <div class="service-item">
+        <div class="idx">04</div>
+        <h3>Comercial</h3>
+        <p>Contratos, constitución de empresas y trámites para emprendedores de la comunidad.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="trust-bar" style="border-top:none;">
+  <div class="section-inner" style="padding:70px 0;">
+    <div class="section-eyebrow">Cómo funciona</div>
+    <h2>De la consulta al trámite resuelto</h2>
+    <div class="steps">
+      <div class="step">
+        <span class="stepnum">1</span>
+        <h3>Completás el formulario</h3>
+        <p>Contás brevemente tu situación y el trámite que necesitás resolver.</p>
+      </div>
+      <div class="step">
+        <span class="stepnum">2</span>
+        <h3>Sergio revisa tu caso</h3>
+        <p>En menos de 24hs te confirma un horario de consulta, sin costo la primera vez.</p>
+      </div>
+      <div class="step">
+        <span class="stepnum">3</span>
+        <h3>Consulta y plan de acción</h3>
+        <p>Te explica en criollo qué pasos seguir y cuánto tiempo puede llevar.</p>
+      </div>
+      <div class="step">
+        <span class="stepnum">4</span>
+        <h3>Seguimiento del trámite</h3>
+        <p>Te vas actualizando por WhatsApp o email en cada etapa, sin tener que preguntar.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="dark-section" id="testimonios">
+  <div class="section-inner">
+    <div class="section-eyebrow">La comunidad opina</div>
+    <h2>Casos reales, resueltos</h2>
+    <p class="section-lead">Testimonios de clientes bolivianos que confiaron su trámite a Sergio.</p>
+    <div class="testi-grid">
+      <div class="testi">
+        <p class="quote">"Vine sin entender nada del trámite de radicación y Sergio me explicó todo paso a paso, en un lenguaje que entendí."</p>
+        <div class="who">— Cliente, trámite migratorio</div>
+      </div>
+      <div class="testi">
+        <p class="quote">"Me ayudó con el reclamo laboral cuando no sabía a quién recurrir. Rápido y claro con los tiempos."</p>
+        <div class="who">— Cliente, trámite laboral</div>
+      </div>
+      <div class="testi">
+        <p class="quote">"Se tomó el tiempo de explicarle todo a mi familia, no solo a mí. Eso hizo la diferencia."</p>
+        <div class="who">— Cliente, trámite familiar</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="consulta">
+  <div class="section-inner" style="display:flex; flex-direction:column; align-items:center;">
+    <div class="section-eyebrow" style="align-self:flex-start; max-width:640px; width:100%;">Agendá tu consulta</div>
+    <h2 style="align-self:flex-start; max-width:640px; width:100%;">Cuenta tu caso, sin compromiso</h2>
+    <p class="section-lead" style="align-self:flex-start;">Completá el formulario y Sergio te responde en menos de 24hs con un horario disponible.</p>
+
+    <div class="form-wrap">
+      <div class="form-head">
+        <span>FORMULARIO_CONSULTA.TXT</span>
+        <span style="display:flex; align-items:center; gap:6px;"><span class="blink"></span>disponible</span>
+      </div>
+      <form id="consultaForm">
+        <div class="field">
+          <label for="nombre">Nombre completo</label>
+          <input id="nombre" type="text" required placeholder="Tu nombre y apellido">
+        </div>
+        <div class="field">
+          <label for="contacto">WhatsApp o email</label>
+          <input id="contacto" type="text" required placeholder="Cómo te contactamos">
+        </div>
+        <div class="field">
+          <label for="tramite">Tipo de trámite</label>
+          <select id="tramite" required>
+            <option value="">Elegí una opción</option>
+            <option>Migratorio (radicación, DNI, renovaciones)</option>
+            <option>Laboral (despido, indemnización)</option>
+            <option>Familia (divorcio, sucesión, alimentos)</option>
+            <option>Comercial (contratos, empresa)</option>
+            <option>No estoy seguro / otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="detalle">Contanos brevemente tu situación</label>
+          <textarea id="detalle" required placeholder="Ej: necesito renovar mi residencia y no sé qué papeles me faltan…"></textarea>
+        </div>
+        <p class="form-note">Tu primera consulta no tiene costo. Los datos que completes acá los recibe directamente Sergio.</p>
+        <button type="submit" class="btn-submit" id="submitBtn">Enviar mi consulta</button>
+        <div class="confirm-box" id="confirmBox">
+          <strong>Solicitud recibida ✓</strong>
+          Sergio va a revisar tu caso y te contacta en menos de 24hs para coordinar el horario de tu consulta.
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="foot-col">
+      <div class="brand">Sergio Cárdenas</div>
+      <p>Abogado · Asesoría legal para la comunidad boliviana en Argentina.</p>
+    </div>
+    <div class="foot-col">
+      <h4>Atención</h4>
+      <p>Lun a Vie — 9 a 18hs</p>
+      <p>Consultas online y presenciales</p>
+    </div>
+    <div class="foot-col">
+      <h4>Contacto</h4>
+      <p>Email: contacto@sergiocardenas.com.ar</p>
+      <p>WhatsApp: +54 9 11 0000-0000</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ---------------------------------------------------------
+   FORMULARIO DE CONSULTA
+   Sin backend propio: arma un mailto: prellenado con los
+   datos cargados, así la consulta llega directo al mail
+   de Sergio. Para producción, reemplazar por Formspree,
+   EmailJS o un backend propio manteniendo los mismos campos.
+--------------------------------------------------------- */
+const form = document.getElementById('consultaForm');
+const submitBtn = document.getElementById('submitBtn');
+const confirmBox = document.getElementById('confirmBox');
+const DESTINATARIO = "contacto@sergiocardenas.com.ar";
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+
+  const nombre = document.getElementById('nombre').value.trim();
+  const contacto = document.getElementById('contacto').value.trim();
+  const tramite = document.getElementById('tramite').value;
+  const detalle = document.getElementById('detalle').value.trim();
+
+  const asunto = encodeURIComponent(`Nueva consulta — ${tramite}`);
+  const cuerpo = encodeURIComponent(
+    `Nombre: ${nombre}\nContacto: ${contacto}\nTipo de trámite: ${tramite}\n\nDetalle:\n${detalle}`
+  );
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Enviando…";
+
+  window.location.href = `mailto:${DESTINATARIO}?subject=${asunto}&body=${cuerpo}`;
+
+  setTimeout(()=>{
+    confirmBox.style.display = 'block';
+    submitBtn.textContent = "Consulta enviada";
+    form.reset();
+  }, 500);
+});
+</script>
+
+</body>
+</html>
