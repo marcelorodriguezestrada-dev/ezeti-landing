@@ -592,7 +592,15 @@ function CampaignCard({
                 <p className="text-[10px] text-cyan-400 mb-2 break-all">{link}</p>
                 <p className="text-[10px] text-cyan-500/70 mb-2">{hashtags}</p>
                 {post.cta && <p className="text-[10px] text-slate-500 bg-slate-900 border border-slate-800 rounded px-2 py-1 mb-1">CTA: {post.cta}</p>}
-                {post.tipVisual && <p className="text-[10px] text-slate-600">🎨 {post.tipVisual}</p>}
+                {post.tipVisual && <p className="text-[10px] text-slate-600 mb-2">🎨 {post.tipVisual}</p>}
+                <a
+                  href={`/api/admin/campaigns/${campaign.id}/poster?post=${i}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-2.5 py-1.5"
+                >
+                  🖼️ Generar imagen para Instagram
+                </a>
               </div>
             );
           })}

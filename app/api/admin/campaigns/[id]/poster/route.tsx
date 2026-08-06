@@ -1,0 +1,164 @@
+import { NextRequest } from "next/server";
+import { ImageResponse } from "next/og";
+import { readFile } from "fs/promises";
+import path from "path";
+import { getCampaignsCol } from "@/lib/firebaseAdmin";
+import type { Campaign } from "@/lib/types";
+
+// next/og (Satori) necesita los bytes de la tipografía -- no puede usar
+// fuentes del sistema como en el navegador. Las tenemos guardadas en el
+// repo (assets/fonts) para no depender de internet en tiempo de request.
+async function loadFonts() {
+  const dir = path.join(process.cwd(), "assets/fonts");
+  const [mono, bold, regular] = await Promise.all([
+    readFile(path.join(dir, "DejaVuSansMono-Bold.ttf")),
+    readFile(path.join(dir, "Poppins-Bold.ttf")),
+    readFile(path.join(dir, "Poppins-Regular.ttf")),
+  ]);
+  return { mono, bold, regular };
+}
+
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const url = new URL(req.url);
+  const postIndex = Number(url.searchParams.get("post") || 0);
+
+  const doc = await getCampaignsCol().doc(id).get();
+  if (!doc.exists) {
+    return new Response("Campaña no encontrada", { status: 404 });
+  }
+  const campaign = doc.data() as Campaign;
+  const post = campaign.posts?.[postIndex] || campaign.posts?.[0];
+  if (!post) {
+    return new Response("La campaña no tiene posts generados todavía", { status: 400 });
+  }
+
+  const isTecnologia = campaign.tipoCampana === "tecnologia";
+  const accent = isTecnologia ? "#22D3EE" : "#F5A623";
+  const accentSoft = isTecnologia ? "rgba(34,211,238,0.16)" : "rgba(245,166,35,0.16)";
+  const ctaText = isTecnologia ? "#062024" : "#1A1206";
+
+  const texto = post.texto.length > 165 ? post.texto.slice(0, 162).trim() + "…" : post.texto;
+  const objetivo = campaign.objetivo.length > 95 ? campaign.objetivo.slice(0, 92).trim() + "…" : campaign.objetivo;
+  const hashtags = (post.hashtags || []).slice(0, 5);
+
+  const { mono, bold, regular } = await loadFonts();
+
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: "#0B1120",
+          padding: "64px",
+          position: "relative",
+          fontFamily: "Body",
+        }}
+      >
+        {/* glow ambiental */}
+        <div
+          style={{
+            position: "absolute",
+            top: -160,
+            left: 220,
+            width: 700,
+            height: 700,
+            borderRadius: 350,
+            background: `radial-gradient(circle, ${accentSoft} 0%, rgba(11,17,32,0) 70%)`,
+            display: "flex",
+          }}
+        />
+
+        {/* eyebrow */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: accent, display: "flex" }} />
+          <div style={{ fontFamily: "Mono", fontSize: 22, color: accent, letterSpacing: 2, fontWeight: 700, display: "flex" }}>
+            EZETI · {campaign.producto.toUpperCase()}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexGrow: 1 }} />
+
+        {/* cuerpo */}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", fontFamily: "Mono", fontWeight: 700, fontSize: 54, color: "#F1F5F9", lineHeight: 1.18 }}>
+            {objetivo}
+          </div>
+          <div style={{ display: "flex", marginTop: 26, fontSize: 27, color: "#94A3B8", lineHeight: 1.5, maxWidth: 900 }}>
+            {texto}
+          </div>
+
+          {hashtags.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 24 }}>
+              {hashtags.map((h) => (
+                <div
+                  key={h}
+                  style={{
+                    display: "flex",
+                    fontFamily: "Mono",
+                    fontSize: 17,
+                    color: "#64748B",
+                    border: "1px solid #232E47",
+                    borderRadius: 20,
+                    padding: "8px 16px",
+                  }}
+                >
+                  {h.startsWith("#") ? h : `#${h}`}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* CTA */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 20,
+            marginTop: 40,
+            backgroundColor: accent,
+            borderRadius: 18,
+            padding: "28px 36px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 52,
+              height: 52,
+              borderRadius: 26,
+              backgroundColor: "#0B1120",
+              fontSize: 24,
+            }}
+          >
+            ⚡
+          </div>
+          <div style={{ display: "flex", fontSize: 27, fontWeight: 700, color: ctaText, lineHeight: 1.35 }}>{post.cta}</div>
+        </div>
+
+        {/* footer */}
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 30, fontFamily: "Mono", fontSize: 18, color: "#48526B" }}>
+          <div style={{ display: "flex" }}>ezeti.pro</div>
+          <div style={{ display: "flex" }}>
+            {campaign.plataforma.toUpperCase()} · {post.formato.toUpperCase()}
+          </div>
+        </div>
+      </div>
+    ),
+    {
+      width: 1080,
+      height: 1350,
+      fonts: [
+        { name: "Mono", data: mono, weight: 700, style: "normal" },
+        { name: "Body", data: bold, weight: 700, style: "normal" },
+        { name: "Body", data: regular, weight: 400, style: "normal" },
+      ],
+    }
+  );
+}
