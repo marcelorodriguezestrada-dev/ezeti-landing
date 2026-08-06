@@ -18,6 +18,21 @@ async function loadFonts() {
   return { mono, bold, regular };
 }
 
+const PLATFORM_ICON: Record<string, string> = {
+  instagram: "📸",
+  linkedin: "💼",
+  facebook: "👥",
+  tiktok: "🎵",
+};
+
+// El lienzo se adapta al formato real del post: Story/Reel son verticales
+// 9:16, todo lo demás (Feed, Carrusel) usa el clásico 4:5 de feed.
+function sizeForFormato(formato: string) {
+  const f = (formato || "").toLowerCase();
+  if (f.includes("story") || f.includes("reel")) return { width: 1080, height: 1920 };
+  return { width: 1080, height: 1350 };
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const url = new URL(req.url);
@@ -43,6 +58,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const hashtags = (post.hashtags || []).slice(0, 5);
 
   const { mono, bold, regular } = await loadFonts();
+  const { width, height } = sizeForFormato(post.formato);
+  const platformIcon = PLATFORM_ICON[campaign.plataforma] || "✨";
 
   return new ImageResponse(
     (
@@ -80,7 +97,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           </div>
         </div>
 
-        <div style={{ display: "flex", flexGrow: 1 }} />
+        <div style={{ display: "flex", flexGrow: 1, alignItems: "center", justifyContent: "center" }}>
+          <div style={{ display: "flex", fontSize: 220, opacity: 0.14 }}>{platformIcon}</div>
+        </div>
 
         {/* cuerpo */}
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -152,8 +171,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       </div>
     ),
     {
-      width: 1080,
-      height: 1350,
+      width,
+      height,
       fonts: [
         { name: "Mono", data: mono, weight: 700, style: "normal" },
         { name: "Body", data: bold, weight: 700, style: "normal" },
