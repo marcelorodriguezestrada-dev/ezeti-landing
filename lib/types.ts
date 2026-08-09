@@ -66,6 +66,7 @@ export interface Campaign {
   producto: string;
   objetivo: string;
   publico: string;
+  miedoPrincipal?: string; // el miedo/objeción principal del cliente -- eje del mensaje, no un dato decorativo
   tono: string;
   plataforma: Plataforma;
   tipoCampana: "tecnologia" | "negocio";

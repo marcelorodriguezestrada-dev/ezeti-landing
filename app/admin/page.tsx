@@ -85,6 +85,7 @@ export default function AdminDashboard() {
     producto: "",
     objetivo: "",
     publico: "",
+    miedoPrincipal: "",
     tono: "cercano y profesional",
     plataforma: "instagram" as Plataforma,
     destinoUrl: "",
@@ -127,7 +128,7 @@ export default function AdminDashboard() {
     setGenError("");
     try {
       await api("/api/admin/campaigns/generate", { method: "POST", body: JSON.stringify(form) });
-      setForm((f) => ({ ...f, producto: "", objetivo: "", publico: "" }));
+      setForm((f) => ({ ...f, producto: "", objetivo: "", publico: "", miedoPrincipal: "" }));
       await load();
       setTab("campanas");
     } catch (e) {
@@ -381,11 +382,21 @@ export default function AdminDashboard() {
                   value={form.objetivo} onChange={(e) => setForm((f) => ({ ...f, objetivo: e.target.value }))} />
               </Field>
               <Field label="Público objetivo">
-                <input className="input" placeholder="Ej: administradores de consorcios en CABA"
+                <input className="input" placeholder="Ej: adultos mayores de 55+ con poca experiencia en tecnología"
                   value={form.publico} onChange={(e) => setForm((f) => ({ ...f, publico: e.target.value }))} />
               </Field>
+              <div className="md:col-span-2">
+                <Field label="¿Qué es lo que más teme o le preocupa a tu cliente? (opcional, pero muy recomendado)">
+                  <textarea className="input min-h-[60px]" placeholder="Ej: tiene miedo de perder sus fotos y contactos al llevar el equipo a reparar, y de que le cobren de más porque 'no entiende de tecnología'"
+                    value={form.miedoPrincipal} onChange={(e) => setForm((f) => ({ ...f, miedoPrincipal: e.target.value }))} />
+                </Field>
+                <p className="text-[11px] text-slate-600 mt-1">
+                  Esto es lo que más cambia la calidad del contenido: la IA va a escribir *hablándole* a ese miedo concreto, en vez de un texto genérico de venta.
+                </p>
+              </div>
               <Field label="Tono">
-                <input className="input" value={form.tono} onChange={(e) => setForm((f) => ({ ...f, tono: e.target.value }))} />
+                <input className="input" placeholder="Ej: paciente, empático, protector -- nunca frío ni técnico"
+                  value={form.tono} onChange={(e) => setForm((f) => ({ ...f, tono: e.target.value }))} />
               </Field>
               <Field label="Link de destino *">
                 <input className="input" placeholder="https://ezeti.pro/#servicios"
