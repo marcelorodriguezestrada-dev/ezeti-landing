@@ -535,27 +535,17 @@ function CampaignCard({
 }) {
   const [showPosts, setShowPosts] = useState(false);
   const [showUtm, setShowUtm] = useState(false);
-  const [showGaleria, setShowGaleria] = useState(false);
-  const [galeria, setGaleria] = useState<MediaImage[] | null>(null);
-  const [galeriaLoading, setGaleriaLoading] = useState(false);
   const [metrics, setMetrics] = useState({ likes: campaign.likes, comentarios: campaign.comentarios, compartidos: campaign.compartidos });
   const [dirty, setDirty] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [library, setLibrary] = useState<MediaImage[] | null>(null);
   const plataformaInfo = PLATAFORMAS.find((p) => p.value === campaign.plataforma);
   const statusInfo = STATUS_CONFIG[campaign.status];
 
-  async function toggleGaleria() {
-    const next = !showGaleria;
-    setShowGaleria(next);
-    if (next && galeria === null) {
-      setGaleriaLoading(true);
-      try {
-        const res = await fetch("/api/admin/media");
-        setGaleria(await res.json());
-      } catch {
-        setGaleria([]);
-      } finally {
-        setGaleriaLoading(false);
-      }
+  function openPicker() {
+    setShowPicker(true);
+    if (!library) {
+      fetch("/api/admin/media").then((r) => r.json()).then(setLibrary).catch(() => setLibrary([]));
     }
   }
 
@@ -587,60 +577,60 @@ function CampaignCard({
         </button>
       </div>
 
-      <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 mb-4">
-        {campaign.imagenFondo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={campaign.imagenFondo} alt="" className="w-9 h-9 rounded object-cover border border-slate-800 flex-shrink-0" />
-        ) : (
-          <span className="w-9 h-9 rounded bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-700 text-xs flex-shrink-0">🖼️</span>
-        )}
-        <input
-          type="text"
-          defaultValue={campaign.imagenFondo || ""}
-          placeholder="URL de una foto real (opcional) — se usa de fondo en la imagen generada"
-          className="flex-1 bg-transparent text-xs text-slate-300 outline-none placeholder:text-slate-600"
-          onBlur={(e) => {
-            if (e.target.value !== (campaign.imagenFondo || "")) onUpdate({ imagenFondo: e.target.value.trim() });
-          }}
-        />
-        <button
-          type="button"
-          onClick={toggleGaleria}
-          className="text-[10px] font-semibold text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-2.5 py-1.5 whitespace-nowrap flex-shrink-0"
-        >
-          {showGaleria ? "▲ Cerrar" : "🖼️ Elegir de galería"}
-        </button>
-      </div>
-
-      {showGaleria && (
-        <div className="bg-slate-950 border border-slate-800 rounded-xl p-3 mb-4">
-          {galeriaLoading ? (
-            <p className="text-xs text-slate-500">Cargando imágenes subidas…</p>
-          ) : !galeria || galeria.length === 0 ? (
-            <p className="text-xs text-slate-500">
-              Todavía no subiste fotos en la pestaña <strong className="text-slate-400">Imágenes</strong>. Subí una ahí primero y va a aparecer acá para elegirla.
-            </p>
+      <div className="relative mb-4">
+        <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2">
+          {campaign.imagenFondo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={campaign.imagenFondo} alt="" className="w-9 h-9 rounded object-cover border border-slate-800 flex-shrink-0" />
           ) : (
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-              {galeria.map((img) => (
-                <button
-                  key={img.id}
-                  type="button"
-                  onClick={() => { onUpdate({ imagenFondo: img.url }); setShowGaleria(false); }}
-                  className={[
-                    "aspect-[4/5] rounded-lg overflow-hidden border-2 transition-colors",
-                    campaign.imagenFondo === img.url ? "border-cyan-500" : "border-transparent hover:border-slate-600",
-                  ].join(" ")}
-                  title="Usar esta foto de fondo"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img.thumbUrl} alt="" className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
+            <span className="w-9 h-9 rounded bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-700 text-xs flex-shrink-0">🖼️</span>
           )}
+          <input
+            type="text"
+            defaultValue={campaign.imagenFondo || ""}
+            placeholder="URL de una foto real (opcional) — se usa de fondo en la imagen generada"
+            className="flex-1 bg-transparent text-xs text-slate-300 outline-none placeholder:text-slate-600 min-w-0"
+            onBlur={(e) => {
+              if (e.target.value !== (campaign.imagenFondo || "")) onUpdate({ imagenFondo: e.target.value.trim() });
+            }}
+          />
+          <button
+            onClick={openPicker}
+            className="text-[10px] font-semibold text-cyan-400 hover:text-cyan-300 whitespace-nowrap flex-shrink-0"
+          >
+            📚 Elegir
+          </button>
         </div>
-      )}
+
+        {showPicker && (
+          <div className="absolute z-20 top-full mt-2 left-0 right-0 bg-slate-900 border border-slate-700 rounded-xl p-3 shadow-2xl">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-semibold text-slate-400">Tu biblioteca de imágenes</span>
+              <button onClick={() => setShowPicker(false)} className="text-slate-500 hover:text-white text-xs">✕</button>
+            </div>
+            {library === null ? (
+              <p className="text-xs text-slate-500 py-4 text-center">Cargando…</p>
+            ) : library.length === 0 ? (
+              <p className="text-xs text-slate-500 py-4 text-center">
+                Todavía no subiste fotos. Andá a la pestaña <b>🖼️ Imágenes</b> para subir una.
+              </p>
+            ) : (
+              <div className="grid grid-cols-5 gap-2 max-h-56 overflow-y-auto">
+                {library.map((img) => (
+                  <button
+                    key={img.id}
+                    onClick={() => { onUpdate({ imagenFondo: img.url }); setShowPicker(false); }}
+                    className="aspect-[4/5] rounded-lg overflow-hidden border-2 border-transparent hover:border-cyan-500 transition-colors"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.thumbUrl} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="flex gap-2 mb-4">
         <button onClick={() => setShowPosts((v) => !v)}

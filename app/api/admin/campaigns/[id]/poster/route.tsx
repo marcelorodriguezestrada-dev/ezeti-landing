@@ -53,13 +53,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const accentSoft = isTecnologia ? "rgba(34,211,238,0.16)" : "rgba(245,166,35,0.16)";
   const ctaText = isTecnologia ? "#062024" : "#1A1206";
 
-  const texto = post.texto.length > 165 ? post.texto.slice(0, 162).trim() + "…" : post.texto;
-  // El titular grande de la pieza tiene que ser el gancho pensado para el cliente (post.titulo).
-  // campaign.objetivo es una meta interna de marketing ("generar consultas de nuevos clientes"),
-  // nunca debería ser lo que lee el público -- se usa acá solo como fallback para campañas viejas
-  // generadas antes de que existiera el campo "titulo".
-  const tituloRaw = post.titulo || campaign.objetivo || campaign.producto;
-  const titulo = tituloRaw.length > 95 ? tituloRaw.slice(0, 92).trim() + "…" : tituloRaw;
+  // El titular sale del propio texto del post (que SÍ está escrito para el
+  // público), no de "objetivo" -- ese campo es una nota interna de
+  // planificación ("qué querés lograr con la campaña"), pensada para guiar
+  // a la IA al generar el contenido, no para mostrarla como si fuera copy.
+  const primerCorte = post.texto.search(/(?<=[.!?])\s+/);
+  const tieneGancho = primerCorte > 15 && primerCorte < 110;
+  const rawHeadline = tieneGancho ? post.texto.slice(0, primerCorte).trim() : post.texto;
+  const rawResto = tieneGancho ? post.texto.slice(primerCorte).trim() : "";
+
+  const headline = rawHeadline.length > 100 ? rawHeadline.slice(0, 97).trim() + "…" : rawHeadline;
+  const resto = rawResto || post.texto;
+  const subcopy = resto.length > 165 ? resto.slice(0, 162).trim() + "…" : resto;
   const hashtags = (post.hashtags || []).slice(0, 5);
 
   const { mono, bold, regular } = await loadFonts();
@@ -132,10 +137,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         {/* cuerpo */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", fontFamily: "Mono", fontWeight: 700, fontSize: 54, color: "#F1F5F9", lineHeight: 1.18 }}>
-            {titulo}
+            {headline}
           </div>
           <div style={{ display: "flex", marginTop: 26, fontSize: 27, color: "#94A3B8", lineHeight: 1.5, maxWidth: 900 }}>
-            {texto}
+            {subcopy}
           </div>
 
           {hashtags.length > 0 && (

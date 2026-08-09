@@ -71,8 +71,6 @@ export default function LandingPage() {
     { title: "Consultorio Dra. Verónica", desc: "Experiencia digital más clara y cercana para mejorar la comunicación con pacientes y reforzar la marca.", link: consultorio, badge: "Servicios & marca" },
     { title: "Tierra Viva", desc: "Experiencia de e-commerce con IA para vender productos y escalar la conversión sin perder la identidad del negocio.", link: tierraviva, badge: "E-commerce" },
     { title: "Incubadora AI", desc: "Herramienta para descubrir hipótesis, oportunidades y caminos de negocio que se pueden desarrollar con IA.", link: incubadora, badge: "Innovación" },
-    { title: "Taller Rápido", desc: "Landing de service técnico con diagnóstico por IA que orienta al cliente y siempre lo deriva a visitar el local, con campañas editables.", link: "/productos-externos/taller-rapido.html", badge: "Retail & Servicio técnico" },
-    { title: "Sergio Cárdenas — Abogado", desc: "Landing para un estudio jurídico enfocado en la comunidad boliviana en Argentina, con formulario de agendamiento de consultas.", link: "/productos-externos/sergio-cardenas.html", badge: "Servicios legales" },
   ];
 
   const methodology = [
