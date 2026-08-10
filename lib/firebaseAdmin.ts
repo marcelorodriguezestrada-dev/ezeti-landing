@@ -43,6 +43,10 @@ export function getImagesCol() {
   return getDb().collection("images");
 }
 
+export function getCouponsCol() {
+  return getDb().collection("coupons");
+}
+
 export function getSettingsDoc() {
   return getDb().collection("settings").doc("general");
 }

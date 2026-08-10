@@ -61,6 +61,23 @@ export interface MediaImage {
   createdAt: number;
 }
 
+export interface Coupon {
+  id: string;
+  code: string;
+  campaignId: string;
+  leadId: string;
+  producto: string;
+  status: "pendiente" | "canjeado";
+  descuentoPct: number; // % que ve el cliente final (default 10)
+  comisionPct: number; // % que cobra ezeti sobre el valor original del servicio (default 20)
+  createdAt: number;
+  canjeadoAt?: number;
+  montoOriginal?: number; // precio real del servicio, cargado por el técnico al canjear
+  montoConRecargo?: number; // montoOriginal * 1.10 -- así el descuento no le come margen al técnico
+  montoFinalCliente?: number; // lo que termina pagando el cliente (montoConRecargo con el descuento aplicado)
+  comisionEzeti?: number; // montoOriginal * comisionPct/100
+}
+
 export interface Campaign {
   id: string;
   producto: string;
@@ -74,6 +91,7 @@ export interface Campaign {
   calendario: CalendarioItem[];
   utmLinks: UtmLink[];
   destinoUrl: string;
+  gastoPublicitario?: number; // inversión manual en pauta (FB/IG Ads) -- base para calcular el CAC
   imagenFondo?: string; // URL de una foto real para usar de fondo en las piezas de marketing generadas
   slug: string;
   status: "borrador" | "activa" | "pausada" | "finalizada";

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getLeadsCol, getCampaignsCol } from "@/lib/firebaseAdmin";
+import { getLeadsCol, getCampaignsCol, getCouponsCol } from "@/lib/firebaseAdmin";
+import { generateCouponCode } from "@/lib/coupon";
 
 // Este endpoint es PÚBLICO a propósito -- lo llaman formularios embebidos en
 // landings externas (Tierra Viva, AuditIA, etc.), que corren en otros
@@ -59,7 +60,28 @@ export async function POST(req: NextRequest) {
 
     const doc = await getLeadsCol().add(lead);
 
-    return NextResponse.json({ id: doc.id, ...lead }, { headers: CORS_HEADERS });
+    // Si el lead vino de una campaña, le generamos su cupón de descuento acá
+    // mismo -- es el "gancho de conversión" del embudo: se lo mostramos ya
+    // en la pantalla de confirmación, para que lo tenga a mano al ir al local.
+    let cupon: { code: string; descuentoPct: number } | null = null;
+    if (campaignId) {
+      const code = generateCouponCode();
+      const descuentoPct = 10;
+      const comisionPct = 20;
+      await getCouponsCol().add({
+        code,
+        campaignId,
+        leadId: doc.id,
+        producto,
+        status: "pendiente" as const,
+        descuentoPct,
+        comisionPct,
+        createdAt: Date.now(),
+      });
+      cupon = { code, descuentoPct };
+    }
+
+    return NextResponse.json({ id: doc.id, ...lead, cupon }, { headers: CORS_HEADERS });
   } catch (err) {
     console.error("Error en POST /api/leads:", err);
     return NextResponse.json({ error: (err as Error).message }, { status: 500, headers: CORS_HEADERS });

@@ -11,6 +11,7 @@ function LeadForm() {
   const [error, setError] = useState("");
   const [leadId, setLeadId] = useState<string | null>(null);
   const [calLink, setCalLink] = useState<string | null>(null);
+  const [cupon, setCupon] = useState<{ code: string; descuentoPct: number } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +30,7 @@ function LeadForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al enviar");
       setLeadId(data.id);
+      if (data.cupon) setCupon(data.cupon);
 
       const settingsRes = await fetch("/api/settings-public");
       const settings = await settingsRes.json();
@@ -49,6 +51,14 @@ function LeadForm() {
           <p className="text-slate-400 mb-8">
             Ya tenemos tu consulta. Si querés, agendá directamente una videollamada para charlar sobre tu necesidad puntual:
           </p>
+
+          {cupon && (
+            <div className="mb-8 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl p-6">
+              <p className="text-xs font-mono uppercase tracking-wider text-cyan-400 mb-2">Tu cupón de descuento</p>
+              <p className="text-3xl font-black text-white tracking-widest mb-2">{cupon.code}</p>
+              <p className="text-sm text-slate-400">Presentalo en el local para tu <b className="text-cyan-400">{cupon.descuentoPct}% off</b>.</p>
+            </div>
+          )}
           {calLink ? (
             <a
               href={`/api/lead-schedule/${leadId}`}

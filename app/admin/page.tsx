@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import type { Campaign, Plataforma, Site, Lead, MediaImage } from "@/lib/types";
+import type { Campaign, Plataforma, Site, Lead, MediaImage, Coupon } from "@/lib/types";
 
 const PLATAFORMAS: { value: Plataforma; label: string; icon: string }[] = [
   { value: "instagram", label: "Instagram", icon: "📸" },
@@ -64,10 +64,11 @@ function CopyBtn({ text, small }: { text: string; small?: boolean }) {
 }
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics" | "leads" | "imagenes">("campanas");
+  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics" | "leads" | "imagenes" | "cac">("campanas");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [calLink, setCalLink] = useState("");
   const [analytics, setAnalytics] = useState<{
     totalVisitas: number;
@@ -104,11 +105,13 @@ export default function AdminDashboard() {
       const sts = await api("/api/admin/sites");
       const an = await api("/api/admin/analytics");
       const lds = await api("/api/admin/leads");
+      const cps = await api("/api/admin/coupons");
       const settings = await api("/api/admin/settings");
       setCampaigns(camps);
       setSites(sts);
       setAnalytics(an);
       setLeads(lds);
+      setCoupons(cps);
       setCalLink(settings.calLink || "");
     } catch (e) {
       console.error(e);
@@ -267,6 +270,7 @@ export default function AdminDashboard() {
               { id: "analytics", label: "📊 Analytics" },
               { id: "sitios", label: "🌐 Sitios" },
               { id: "imagenes", label: "🖼️ Imágenes" },
+              { id: "cac", label: "💰 CAC & Cupones" },
             ].map((t) => (
               <button
                 key={t.id}
@@ -507,6 +511,7 @@ export default function AdminDashboard() {
         {tab === "analytics" && <AnalyticsTab analytics={analytics} campaigns={campaigns} />}
         {tab === "sitios" && <SitiosTab sites={sites} onAdd={addSite} onUpdate={updateSite} onDelete={deleteSite} />}
         {tab === "imagenes" && <ImagenesTab />}
+        {tab === "cac" && <CacTab campaigns={campaigns} leads={leads} coupons={coupons} onUpdateCampaign={updateCampaign} onCouponsRefresh={load} />}
       </main>
 
       <style jsx global>{`
@@ -1484,6 +1489,158 @@ function ImagenesTab() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function CacTab({
+  campaigns, leads, coupons, onUpdateCampaign, onCouponsRefresh,
+}: {
+  campaigns: Campaign[];
+  leads: Lead[];
+  coupons: Coupon[];
+  onUpdateCampaign: (id: string, patch: Partial<Campaign>) => void;
+  onCouponsRefresh: () => void;
+}) {
+  const [redeemCode, setRedeemCode] = useState("");
+  const [redeemMonto, setRedeemMonto] = useState("");
+  const [redeeming, setRedeeming] = useState(false);
+  const [redeemError, setRedeemError] = useState("");
+  const [receipt, setReceipt] = useState<Coupon | null>(null);
+
+  async function handleRedeem(e: React.FormEvent) {
+    e.preventDefault();
+    setRedeeming(true);
+    setRedeemError("");
+    setReceipt(null);
+    try {
+      const res = await fetch("/api/admin/coupons/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: redeemCode, montoOriginal: Number(redeemMonto) }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al canjear.");
+      setReceipt(data);
+      setRedeemCode("");
+      setRedeemMonto("");
+      onCouponsRefresh();
+    } catch (err) {
+      setRedeemError((err as Error).message);
+    } finally {
+      setRedeeming(false);
+    }
+  }
+
+  const totalGasto = campaigns.reduce((s, c) => s + (c.gastoPublicitario || 0), 0);
+  const totalCanjes = coupons.filter((c) => c.status === "canjeado").length;
+  const totalComision = coupons.reduce((s, c) => s + (c.comisionEzeti || 0), 0);
+  const cacGlobal = totalCanjes > 0 ? totalGasto / totalCanjes : null;
+
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-white mb-1">CAC & Cupones</h2>
+      <p className="text-sm text-slate-500 mb-6">Costo de adquisición real por campaña: clics → leads → cupones canjeados en el local.</p>
+
+      {/* resumen global */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <StatBox label="Gasto total en pauta" value={`$${totalGasto.toLocaleString("es-AR")}`} />
+        <StatBox label="Cupones canjeados" value={totalCanjes.toString()} />
+        <StatBox label="CAC global" value={cacGlobal ? `$${cacGlobal.toLocaleString("es-AR", { maximumFractionDigits: 0 })}` : "—"} />
+        <StatBox label="Comisión generada" value={`$${totalComision.toLocaleString("es-AR", { maximumFractionDigits: 0 })}`} />
+      </div>
+
+      {/* canjear cupón */}
+      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 mb-8">
+        <h3 className="text-sm font-bold text-white mb-1">🎟️ Canjear cupón (en el local)</h3>
+        <p className="text-xs text-slate-500 mb-4">El código que te muestra el cliente + el precio real del servicio. El sistema calcula el descuento y la comisión solo.</p>
+        <form onSubmit={handleRedeem} className="flex flex-wrap gap-3 items-end">
+          <div className="flex-1 min-w-[140px]">
+            <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Código</label>
+            <input className="input" placeholder="EZT-XXXXX" value={redeemCode}
+              onChange={(e) => setRedeemCode(e.target.value.toUpperCase())} />
+          </div>
+          <div className="flex-1 min-w-[140px]">
+            <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Precio real del servicio ($)</label>
+            <input type="number" className="input" placeholder="15000" value={redeemMonto}
+              onChange={(e) => setRedeemMonto(e.target.value)} />
+          </div>
+          <button type="submit" disabled={redeeming || !redeemCode || !redeemMonto}
+            className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold px-6 py-2.5 rounded-lg transition-colors">
+            {redeeming ? "Canjeando…" : "Canjear"}
+          </button>
+        </form>
+        {redeemError && <p className="text-red-400 text-xs mt-3">{redeemError}</p>}
+        {receipt && (
+          <div className="mt-4 bg-slate-950 border border-cyan-500/30 rounded-xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+            <div><p className="text-[10px] text-slate-500 uppercase">Precio original</p><p className="text-white font-bold">${receipt.montoOriginal?.toLocaleString("es-AR")}</p></div>
+            <div><p className="text-[10px] text-slate-500 uppercase">Con recargo (10%)</p><p className="text-white font-bold">${receipt.montoConRecargo?.toLocaleString("es-AR")}</p></div>
+            <div><p className="text-[10px] text-slate-500 uppercase">Cliente paga</p><p className="text-cyan-400 font-bold">${receipt.montoFinalCliente?.toLocaleString("es-AR")}</p></div>
+            <div><p className="text-[10px] text-slate-500 uppercase">Comisión ezeti</p><p className="text-amber-400 font-bold">${receipt.comisionEzeti?.toLocaleString("es-AR")}</p></div>
+          </div>
+        )}
+      </div>
+
+      {/* tabla por campaña */}
+      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-800 text-left text-[10px] font-mono text-slate-500 uppercase">
+              <th className="p-3">Campaña</th>
+              <th className="p-3">Gasto en pauta</th>
+              <th className="p-3">Clics</th>
+              <th className="p-3">Leads</th>
+              <th className="p-3">Canjes</th>
+              <th className="p-3">Clic→Lead</th>
+              <th className="p-3">Lead→Canje</th>
+              <th className="p-3">CAC</th>
+            </tr>
+          </thead>
+          <tbody>
+            {campaigns.map((c) => {
+              const clics = c.visitas || 0;
+              const leadsCamp = leads.filter((l) => l.campaignId === c.id).length;
+              const canjesCamp = coupons.filter((cp) => cp.campaignId === c.id && cp.status === "canjeado").length;
+              const cac = c.gastoPublicitario && canjesCamp > 0 ? c.gastoPublicitario / canjesCamp : null;
+              const tasaClicLead = clics > 0 ? ((leadsCamp / clics) * 100).toFixed(1) : "—";
+              const tasaLeadCanje = leadsCamp > 0 ? ((canjesCamp / leadsCamp) * 100).toFixed(1) : "—";
+              return (
+                <tr key={c.id} className="border-b border-slate-800/50 last:border-0">
+                  <td className="p-3 text-white font-medium max-w-[160px] truncate">{c.producto}</td>
+                  <td className="p-3">
+                    <input
+                      type="number"
+                      defaultValue={c.gastoPublicitario || ""}
+                      placeholder="$0"
+                      className="w-24 bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-white outline-none focus:border-cyan-500"
+                      onBlur={(e) => {
+                        const val = Number(e.target.value) || 0;
+                        if (val !== (c.gastoPublicitario || 0)) onUpdateCampaign(c.id, { gastoPublicitario: val });
+                      }}
+                    />
+                  </td>
+                  <td className="p-3 text-slate-300">{clics}</td>
+                  <td className="p-3 text-slate-300">{leadsCamp}</td>
+                  <td className="p-3 text-slate-300">{canjesCamp}</td>
+                  <td className="p-3 text-slate-500 font-mono text-xs">{tasaClicLead}{tasaClicLead !== "—" && "%"}</td>
+                  <td className="p-3 text-slate-500 font-mono text-xs">{tasaLeadCanje}{tasaLeadCanje !== "—" && "%"}</td>
+                  <td className="p-3 font-bold text-cyan-400">{cac ? `$${cac.toLocaleString("es-AR", { maximumFractionDigits: 0 })}` : "—"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {campaigns.length === 0 && <p className="text-sm text-slate-500 p-6 text-center">Todavía no hay campañas.</p>}
+      </div>
+    </div>
+  );
+}
+
+function StatBox({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+      <p className="text-[10px] font-mono text-slate-500 uppercase mb-1">{label}</p>
+      <p className="text-xl font-bold text-white">{value}</p>
     </div>
   );
 }
