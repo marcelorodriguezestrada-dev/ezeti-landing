@@ -8,6 +8,8 @@ export interface Site {
   objetivoSugerido: string;
   url: string;
   activo: boolean;
+  facebookPageId?: string; // Página de Facebook propia de ESTE negocio (no una global compartida)
+  facebookPageAccessToken?: string; // token de larga duración -- nunca se envía al browser, ver /api/admin/sites
   createdAt: number;
 }
 
@@ -36,6 +38,7 @@ export interface CampaignPost {
   horaOptima: string; // "09:00"
   cta: string;
   tipVisual: string;
+  facebookPostId?: string; // si está publicado en la Página de Facebook, el ID que devolvió Graph API
 }
 
 export interface CalendarioItem {
@@ -80,6 +83,7 @@ export interface Coupon {
 
 export interface Campaign {
   id: string;
+  siteId?: string; // qué Site generó esta campaña -- define a qué Página de Facebook publica
   producto: string;
   objetivo: string;
   publico: string;

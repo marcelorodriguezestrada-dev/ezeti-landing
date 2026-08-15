@@ -30,7 +30,13 @@ export async function GET() {
       snap = await col.orderBy("createdAt", "asc").get();
     }
 
-    const sites = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Site[];
+    const sites = snap.docs.map((d) => {
+      const data = d.data();
+      // El access token de Facebook NUNCA sale del servidor -- el browser
+      // solo necesita saber si ya está configurado, no el valor en sí.
+      const { facebookPageAccessToken, ...resto } = data;
+      return { id: d.id, ...resto, hasFacebookToken: !!facebookPageAccessToken };
+    }) as (Site & { hasFacebookToken: boolean })[];
     return NextResponse.json(sites);
   } catch (err) {
     console.error("Error en GET /api/admin/sites:", err);
@@ -40,7 +46,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { emoji, nombre, descripcion, temaNegocio, publico, objetivoSugerido, url } = await req.json();
+    const { emoji, nombre, descripcion, temaNegocio, publico, objetivoSugerido, url, facebookPageId, facebookPageAccessToken } = await req.json();
     if (!nombre || !descripcion || !url) {
       return NextResponse.json({ error: "Faltan campos: nombre, descripcion, url" }, { status: 400 });
     }
@@ -52,11 +58,14 @@ export async function POST(req: NextRequest) {
       publico: publico || "",
       objetivoSugerido: objetivoSugerido || "generar consultas de nuevos clientes",
       url,
+      ...(facebookPageId ? { facebookPageId } : {}),
+      ...(facebookPageAccessToken ? { facebookPageAccessToken } : {}),
       activo: true,
       createdAt: Date.now(),
     };
     const doc = await getSitesCol().add(site);
-    return NextResponse.json({ id: doc.id, ...site });
+    const { facebookPageAccessToken: _omit, ...siteSinToken } = site;
+    return NextResponse.json({ id: doc.id, ...siteSinToken, hasFacebookToken: !!facebookPageAccessToken });
   } catch (err) {
     console.error("Error en POST /api/admin/sites:", err);
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });

@@ -84,6 +84,7 @@ export default function AdminDashboard() {
 
   const [form, setForm] = useState({
     producto: "",
+    siteId: "",
     objetivo: "",
     publico: "",
     miedoPrincipal: "",
@@ -131,7 +132,7 @@ export default function AdminDashboard() {
     setGenError("");
     try {
       await api("/api/admin/campaigns/generate", { method: "POST", body: JSON.stringify(form) });
-      setForm((f) => ({ ...f, producto: "", objetivo: "", publico: "", miedoPrincipal: "" }));
+      setForm((f) => ({ ...f, producto: "", siteId: "", objetivo: "", publico: "", miedoPrincipal: "" }));
       await load();
       setTab("campanas");
     } catch (e) {
@@ -357,7 +358,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => {
                       const producto = form.tipoCampana === "negocio" ? (s.temaNegocio || s.descripcion) : s.descripcion;
-                      setForm((f) => ({ ...f, producto, publico: s.publico, destinoUrl: s.url, objetivo: s.objetivoSugerido }));
+                      setForm((f) => ({ ...f, producto, publico: s.publico, destinoUrl: s.url, objetivo: s.objetivoSugerido, siteId: s.id }));
                       setGenError("");
                     }}
                     title={sinTema ? "Este sitio no tiene 'tema de negocio' cargado todavía -- va a usar la descripción técnica. Completalo en 🌐 Sitios." : undefined}
@@ -555,8 +556,29 @@ function CampaignCard({
   const [dirty, setDirty] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [library, setLibrary] = useState<MediaImage[] | null>(null);
+  const [publishingIdx, setPublishingIdx] = useState<number | null>(null);
+  const [publishError, setPublishError] = useState<{ index: number; message: string } | null>(null);
   const plataformaInfo = PLATAFORMAS.find((p) => p.value === campaign.plataforma);
   const statusInfo = STATUS_CONFIG[campaign.status];
+
+  async function publishToFacebook(postIndex: number) {
+    setPublishingIdx(postIndex);
+    setPublishError(null);
+    try {
+      const res = await fetch(`/api/admin/campaigns/${campaign.id}/publish-facebook`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postIndex }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      onUpdate({ posts: data.posts });
+    } catch (err) {
+      setPublishError({ index: postIndex, message: (err as Error).message });
+    } finally {
+      setPublishingIdx(null);
+    }
+  }
 
   function openPicker() {
     setShowPicker(true);
@@ -675,14 +697,34 @@ function CampaignCard({
                 <p className="text-[10px] text-cyan-500/70 mb-2">{hashtags}</p>
                 {post.cta && <p className="text-[10px] text-slate-500 bg-slate-900 border border-slate-800 rounded px-2 py-1 mb-1">CTA: {post.cta}</p>}
                 {post.tipVisual && <p className="text-[10px] text-slate-600 mb-2">🎨 {post.tipVisual}</p>}
-                <a
-                  href={`/api/admin/campaigns/${campaign.id}/poster?post=${i}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-2.5 py-1.5"
-                >
-                  🖼️ Generar imagen para Instagram
-                </a>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href={`/api/admin/campaigns/${campaign.id}/poster?post=${i}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-2.5 py-1.5"
+                  >
+                    🖼️ Generar imagen para Instagram
+                  </a>
+                  {campaign.plataforma === "facebook" && (
+                    post.facebookPostId ? (
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-green-400 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1.5">
+                        ✓ Publicado en Facebook
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => publishToFacebook(i)}
+                        disabled={publishingIdx === i}
+                        className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-blue-400 hover:text-blue-300 bg-blue-500/10 border border-blue-500/30 rounded-lg px-2.5 py-1.5 disabled:opacity-50"
+                      >
+                        {publishingIdx === i ? "⟳ Publicando..." : "👥 Publicar en Facebook"}
+                      </button>
+                    )
+                  )}
+                </div>
+                {publishError?.index === i && (
+                  <p className="text-[10px] text-red-400 mt-1.5">⚠ {publishError.message}</p>
+                )}
               </div>
             );
           })}
@@ -1174,10 +1216,12 @@ function LeadRow({
   );
 }
 
-function SiteRow({ site: s, onUpdate, onDelete }: { site: Site; onUpdate: (id: string, patch: Partial<Site>) => void; onDelete: (id: string) => void }) {
+function SiteRow({ site: s, onUpdate, onDelete }: { site: Site & { hasFacebookToken?: boolean }; onUpdate: (id: string, patch: Partial<Site>) => void; onDelete: (id: string) => void }) {
   const [editing, setEditing] = useState(false);
   const [descripcion, setDescripcion] = useState(s.descripcion);
   const [temaNegocio, setTemaNegocio] = useState(s.temaNegocio || "");
+  const [facebookPageId, setFacebookPageId] = useState(s.facebookPageId || "");
+  const [facebookPageAccessToken, setFacebookPageAccessToken] = useState(""); // siempre vacío -- el token nunca vuelve del servidor
 
   return (
     <div className={["bg-slate-900/50 border rounded-xl p-4", s.activo ? "border-slate-800" : "border-slate-800/50 opacity-50"].join(" ")}>
@@ -1188,6 +1232,11 @@ function SiteRow({ site: s, onUpdate, onDelete }: { site: Site; onUpdate: (id: s
           <div className="text-xs text-slate-500 truncate">{s.url}</div>
         </div>
         {!s.temaNegocio && <span className="text-[10px] text-amber-500/80">sin tema de negocio</span>}
+        {s.hasFacebookToken ? (
+          <span className="text-[10px] text-blue-400">👥 Facebook conectado</span>
+        ) : (
+          <span className="text-[10px] text-slate-600">sin Facebook</span>
+        )}
         <button onClick={() => setEditing((v) => !v)} className="text-xs font-semibold text-slate-400 hover:text-white bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5">
           {editing ? "▲" : "✏️"} Editar
         </button>
@@ -1211,8 +1260,35 @@ function SiteRow({ site: s, onUpdate, onDelete }: { site: Site; onUpdate: (id: s
             <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Tema de negocio (venta del rubro, sin mencionar tecnología)</label>
             <input className="input" placeholder="Ej: Lombrices para tu huerta y ser feliz con tus plantas" value={temaNegocio} onChange={(e) => setTemaNegocio(e.target.value)} />
           </div>
+          <div className="pt-2 border-t border-slate-800/50">
+            <p className="text-xs font-mono text-blue-400/80 uppercase mb-2">👥 Página de Facebook de este negocio (para publicar campañas)</p>
+            <div className="grid md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Page ID</label>
+                <input className="input" placeholder="ej. 123456789012345" value={facebookPageId} onChange={(e) => setFacebookPageId(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-xs font-mono text-slate-500 uppercase mb-1">
+                  Access Token {s.hasFacebookToken ? "(dejalo vacío para mantener el actual)" : ""}
+                </label>
+                <input
+                  className="input"
+                  type="password"
+                  placeholder={s.hasFacebookToken ? "•••••••• ya configurado" : "token de larga duración"}
+                  value={facebookPageAccessToken}
+                  onChange={(e) => setFacebookPageAccessToken(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
           <button
-            onClick={() => { onUpdate(s.id, { descripcion, temaNegocio }); setEditing(false); }}
+            onClick={() => {
+              const patch: Partial<Site> = { descripcion, temaNegocio, facebookPageId };
+              if (facebookPageAccessToken) patch.facebookPageAccessToken = facebookPageAccessToken;
+              onUpdate(s.id, patch);
+              setFacebookPageAccessToken("");
+              setEditing(false);
+            }}
             className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition-colors"
           >
             Guardar cambios

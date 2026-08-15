@@ -14,7 +14,7 @@ const LINEAMIENTOS: Record<Plataforma, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { producto, objetivo, publico, miedoPrincipal, tono, plataforma, destinoUrl, cantPosts, tipoCampana } = await req.json();
+    const { producto, siteId, objetivo, publico, miedoPrincipal, tono, plataforma, destinoUrl, cantPosts, tipoCampana } = await req.json();
 
     if (!producto || !objetivo || !plataforma || !destinoUrl) {
       return NextResponse.json(
@@ -119,6 +119,7 @@ Importante sobre el link: NO escribas ninguna URL dentro de "texto" -- el link d
 
     const campaign = {
       producto,
+      siteId: siteId || null,
       objetivo,
       publico: publico || "",
       miedoPrincipal: miedoPrincipal || "",
