@@ -84,7 +84,7 @@ export interface Coupon {
 
 export interface Campaign {
   id: string;
-  siteId?: string; // qué Site generó esta campaña -- define a qué Página de Facebook publica
+  siteId?: string | null; // qué Site generó esta campaña -- define a qué Página de Facebook publica
   producto: string;
   objetivo: string;
   publico: string;

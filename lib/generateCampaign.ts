@@ -1,7 +1,7 @@
 import { callGroq } from "@/lib/groq";
 import { generateSlug } from "@/lib/slug";
 import { buildUtmLinks } from "@/lib/utm";
-import type { Plataforma, CampaignPost, CalendarioItem } from "@/lib/types";
+import type { Plataforma, CampaignPost, CalendarioItem, Campaign } from "@/lib/types";
 
 const LINEAMIENTOS: Record<Plataforma, string> = {
   instagram: "Mezclá formatos Feed, Story y Reel. Captions de hasta 150 palabras, tono cercano, cierre con pregunta o CTA claro.",
@@ -25,7 +25,7 @@ export interface GenerarCampaniaInput {
 
 // Arma el prompt, llama a Groq, y devuelve el objeto Campaign listo para
 // guardar en Firestore (sin guardarlo -- eso lo decide quien la llama).
-export async function generarCampania(input: GenerarCampaniaInput) {
+export async function generarCampania(input: GenerarCampaniaInput): Promise<Omit<Campaign, "id">> {
   const { producto, siteId, objetivo, publico, miedoPrincipal, tono, plataforma, destinoUrl, tipoCampana } = input;
 
   if (!producto || !objetivo || !plataforma || !destinoUrl) {
