@@ -47,8 +47,7 @@ export async function GET(req: NextRequest) {
       const hashtags = (post.hashtags || []).map((h) => `#${h}`).join(" ");
       const mensaje = [post.texto, utmLink?.url, hashtags].filter(Boolean).join("\n\n");
 
-      const { facebookPostId } = await publicarEnFacebook(mensaje, campaign.imagenFondo, {
-        pageId: site.facebookPageId,
+      const { facebookPostId } = await publicarEnFacebook(mensaje, undefined, {        pageId: site.facebookPageId,
         accessToken: site.facebookPageAccessToken,
       });
 
