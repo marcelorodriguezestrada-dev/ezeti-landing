@@ -10,6 +10,7 @@ export interface Site {
   activo: boolean;
   facebookPageId?: string; // Página de Facebook propia de ESTE negocio (no una global compartida)
   facebookPageAccessToken?: string; // token de larga duración -- nunca se envía al browser, ver /api/admin/sites
+  autoPublicarFacebook?: boolean; // si está en true, el cron genera y publica solo, sin intervención manual
   createdAt: number;
 }
 

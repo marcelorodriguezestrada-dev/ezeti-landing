@@ -1222,6 +1222,7 @@ function SiteRow({ site: s, onUpdate, onDelete }: { site: Site & { hasFacebookTo
   const [temaNegocio, setTemaNegocio] = useState(s.temaNegocio || "");
   const [facebookPageId, setFacebookPageId] = useState(s.facebookPageId || "");
   const [facebookPageAccessToken, setFacebookPageAccessToken] = useState(""); // siempre vacío -- el token nunca vuelve del servidor
+  const [autoPublicar, setAutoPublicar] = useState(s.autoPublicarFacebook || false);
 
   return (
     <div className={["bg-slate-900/50 border rounded-xl p-4", s.activo ? "border-slate-800" : "border-slate-800/50 opacity-50"].join(" ")}>
@@ -1280,10 +1281,18 @@ function SiteRow({ site: s, onUpdate, onDelete }: { site: Site & { hasFacebookTo
                 />
               </div>
             </div>
+            <label className="flex items-center gap-2 mt-3 text-xs text-slate-400 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={autoPublicar}
+                onChange={(e) => setAutoPublicar(e.target.checked)}
+              />
+              🤖 Publicar automáticamente (la IA genera y publica sola, sin que tengas que tocar nada)
+            </label>
           </div>
           <button
             onClick={() => {
-              const patch: Partial<Site> = { descripcion, temaNegocio, facebookPageId };
+              const patch: Partial<Site> = { descripcion, temaNegocio, facebookPageId, autoPublicarFacebook: autoPublicar };
               if (facebookPageAccessToken) patch.facebookPageAccessToken = facebookPageAccessToken;
               onUpdate(s.id, patch);
               setFacebookPageAccessToken("");

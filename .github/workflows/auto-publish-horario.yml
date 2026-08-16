@@ -1,0 +1,29 @@
+name: Auto-publish horario (alternativa gratis a Vercel Pro)
+
+# Esto es OPCIONAL. Solo lo necesitás si querés publicar más de una vez por
+# día -- el plan gratis de Vercel (Hobby) solo permite cron jobs diarios.
+# GitHub Actions es gratis (en repos públicos, minutos ilimitados; en
+# privados, con una cuota mensual gratuita que alcanza de sobra para esto).
+#
+# Para activarlo:
+# 1. Este archivo ya dispara cada hora (podés cambiar el "cron" de abajo).
+# 2. Andá a tu repo en GitHub → Settings → Secrets and variables → Actions
+# 3. Agregá un secret llamado CRON_SECRET con el mismo valor que tenés en
+#    Vercel (Settings → Environment Variables → CRON_SECRET).
+# 4. Agregá otro secret llamado APP_URL con tu dominio, ej:
+#    https://ezeti.pro (sin barra al final)
+# 5. Si usás esto, podés borrar (o dejar, no molesta) el cron de vercel.json.
+
+on:
+  schedule:
+    - cron: "0 * * * *" # cada hora, en punto (UTC)
+  workflow_dispatch: {} # también podés dispararlo a mano desde la pestaña Actions
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar a la ruta de auto-publish
+        run: |
+          curl -f -X GET "${{ secrets.APP_URL }}/api/cron/auto-publish" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

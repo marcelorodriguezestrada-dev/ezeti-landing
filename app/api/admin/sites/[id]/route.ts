@@ -5,7 +5,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   try {
     const { id } = await params;
     const body = await req.json();
-    const permitido = ["emoji", "nombre", "descripcion", "temaNegocio", "publico", "objetivoSugerido", "url", "activo", "facebookPageId", "facebookPageAccessToken"] as const;
+    const permitido = ["emoji", "nombre", "descripcion", "temaNegocio", "publico", "objetivoSugerido", "url", "activo", "facebookPageId", "facebookPageAccessToken", "autoPublicarFacebook"] as const;
     const update: Record<string, unknown> = {};
     for (const key of permitido) {
       if (body[key] !== undefined) update[key] = body[key];
