@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCampaignsCol, getSitesCol } from "@/lib/firebaseAdmin";
+import { getCampaignsCol, getSitesCol, getCronLogsCol } from "@/lib/firebaseAdmin";
 import { generarCampania } from "@/lib/generateCampaign";
 import { publicarEnFacebook } from "@/lib/facebook";
 import type { Site } from "@/lib/types";
@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
       campaign.posts[0] = { ...post, facebookPostId };
       campaign.status = "activa";
       campaign.publishedAt = Date.now();
+      campaign.origen = "automatico";
 
       await getCampaignsCol().add(campaign);
 
@@ -64,5 +65,8 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ejecutadoEn: new Date().toISOString(), sitios: resultados.length, resultados });
+  const ejecutadoEn = Date.now();
+  await getCronLogsCol().add({ ejecutadoEn, resultados });
+
+  return NextResponse.json({ ejecutadoEn: new Date(ejecutadoEn).toISOString(), sitios: resultados.length, resultados });
 }

@@ -35,6 +35,10 @@ export function getVisitsCol() {
   return getDb().collection("visits");
 }
 
+export function getCronLogsCol() {
+  return getDb().collection("cronLogs");
+}
+
 export function getLeadsCol() {
   return getDb().collection("leads");
 }

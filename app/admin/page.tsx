@@ -64,7 +64,7 @@ function CopyBtn({ text, small }: { text: string; small?: boolean }) {
 }
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics" | "leads" | "imagenes" | "cac">("campanas");
+  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics" | "leads" | "imagenes" | "cac" | "automatizacion">("campanas");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -270,6 +270,7 @@ export default function AdminDashboard() {
               { id: "calendario", label: "📅 Calendario" },
               { id: "analytics", label: "📊 Analytics" },
               { id: "sitios", label: "🌐 Sitios" },
+              { id: "automatizacion", label: "🤖 Automatización" },
               { id: "imagenes", label: "🖼️ Imágenes" },
               { id: "cac", label: "💰 CAC & Cupones" },
             ].map((t) => (
@@ -511,6 +512,7 @@ export default function AdminDashboard() {
         )}
         {tab === "analytics" && <AnalyticsTab analytics={analytics} campaigns={campaigns} />}
         {tab === "sitios" && <SitiosTab sites={sites} onAdd={addSite} onUpdate={updateSite} onDelete={deleteSite} />}
+        {tab === "automatizacion" && <AutomatizacionTab campaigns={campaigns} />}
         {tab === "imagenes" && <ImagenesTab />}
         {tab === "cac" && <CacTab campaigns={campaigns} leads={leads} coupons={coupons} onUpdateCampaign={updateCampaign} onCouponsRefresh={load} />}
       </main>
@@ -1216,7 +1218,97 @@ function LeadRow({
   );
 }
 
+interface CronLogEntry {
+  id: string;
+  ejecutadoEn: number;
+  resultados: Array<{ site: string; ok: boolean; detalle: string }>;
+}
+
+function AutomatizacionTab({ campaigns }: { campaigns: Campaign[] }) {
+  const [logs, setLogs] = useState<CronLogEntry[] | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/admin/cron-logs")
+      .then((r) => r.json())
+      .then(setLogs)
+      .catch(() => setError("No pudimos cargar el historial de corridas."));
+  }, []);
+
+  const autoCampaigns = campaigns
+    .filter((c) => c.origen === "automatico")
+    .sort((a, b) => (b.publishedAt || b.createdAt) - (a.publishedAt || a.createdAt));
+
+  const fmtFecha = (ts: number) =>
+    new Date(ts).toLocaleString("es-AR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h3 className="text-white font-bold text-lg mb-1">🤖 Historial de corridas automáticas</h3>
+        <p className="text-slate-500 text-sm mb-4">
+          Cada vez que el cron se ejecuta (según <code className="text-cyan-400">vercel.json</code> o tu workflow de GitHub Actions), queda un registro acá, aunque no haya publicado nada.
+        </p>
+
+        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {logs === null && !error && <p className="text-slate-500 text-sm">Cargando...</p>}
+        {logs?.length === 0 && <p className="text-slate-500 text-sm">Todavía no corrió ninguna vez.</p>}
+
+        <div className="space-y-3">
+          {logs?.map((log) => (
+            <div key={log.id} className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+              <div className="text-sm font-semibold text-white mb-2">🕐 {fmtFecha(log.ejecutadoEn)}</div>
+              {log.resultados.length === 0 ? (
+                <p className="text-xs text-slate-500">Corrió, pero ningún sitio tenía la auto-publicación activada.</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {log.resultados.map((r, i) => (
+                    <div key={i} className="flex items-start gap-2 text-xs">
+                      <span className={r.ok ? "text-green-400" : "text-red-400"}>{r.ok ? "✓" : "✗"}</span>
+                      <span className="text-slate-300 font-medium">{r.site}:</span>
+                      <span className="text-slate-500">{r.detalle}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-white font-bold text-lg mb-1">📈 Actividad de lo publicado automáticamente</h3>
+        <p className="text-slate-500 text-sm mb-4">Visitas y engagement en vivo de cada post que generó y publicó la IA sola.</p>
+
+        {autoCampaigns.length === 0 ? (
+          <p className="text-slate-500 text-sm">Todavía no hay ninguna campaña generada automáticamente.</p>
+        ) : (
+          <div className="space-y-2">
+            {autoCampaigns.map((c) => (
+              <div key={c.id} className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center gap-4">
+                <div className="flex-1 min-w-[180px]">
+                  <div className="text-sm font-semibold text-white">{c.producto}</div>
+                  <div className="text-xs text-slate-500">
+                    {c.publishedAt ? fmtFecha(c.publishedAt) : "sin publicar"} · {c.plataforma}
+                  </div>
+                </div>
+                <div className="flex gap-4 text-xs text-slate-400">
+                  <span>👁️ {c.visitas} visitas</span>
+                  <span>❤️ {c.likes}</span>
+                  <span>💬 {c.comentarios}</span>
+                  <span>🔁 {c.compartidos}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SiteRow({ site: s, onUpdate, onDelete }: { site: Site & { hasFacebookToken?: boolean }; onUpdate: (id: string, patch: Partial<Site>) => void; onDelete: (id: string) => void }) {
+
   const [editing, setEditing] = useState(false);
   const [descripcion, setDescripcion] = useState(s.descripcion);
   const [temaNegocio, setTemaNegocio] = useState(s.temaNegocio || "");
