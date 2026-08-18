@@ -11,7 +11,10 @@ function getGroqClient() {
 
 export async function callGroq(userPrompt: string, systemPrompt: string, maxTokens = 1200) {
   const completion = await getGroqClient().chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    // llama-3.3-70b-versatile fue discontinuado por Groq (apagado final:
+    // 16-ago-2026). openai/gpt-oss-120b es el reemplazo que recomienda el
+    // propio Groq -- mismo tamaño de contexto, más rápido.
+    model: "openai/gpt-oss-120b",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
