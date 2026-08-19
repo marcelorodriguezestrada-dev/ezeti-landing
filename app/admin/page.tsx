@@ -1047,6 +1047,8 @@ function SitiosTab({
         </div>
       )}
 
+      <TokenExchangeTool sites={sites} onUpdate={onUpdate} />
+
       <div className="space-y-3">
         {sites.map((s) => (
           <SiteRow key={s.id} site={s} onUpdate={onUpdate} onDelete={onDelete} />
@@ -1320,6 +1322,137 @@ function AutomatizacionTab({ campaigns }: { campaigns: Campaign[] }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function TokenExchangeTool({ sites, onUpdate }: { sites: Site[]; onUpdate: (id: string, patch: Partial<Site>) => void }) {
+  const [open, setOpen] = useState(false);
+  const [shortToken, setShortToken] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [resultado, setResultado] = useState<{
+    longLivedUserToken: string;
+    expiresInDays: number | null;
+    pages: { id: string; name: string; accessToken: string }[];
+  } | null>(null);
+  const [siteElegido, setSiteElegido] = useState<Record<string, string>>({}); // pageId -> siteId
+  const [guardado, setGuardado] = useState<string | null>(null); // pageId recién guardado
+
+  const canjear = async () => {
+    setLoading(true);
+    setError("");
+    setResultado(null);
+    try {
+      const res = await fetch("/api/admin/facebook/exchange-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shortToken }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setResultado(data);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const guardarEnSitio = (page: { id: string; name: string; accessToken: string }) => {
+    const siteId = siteElegido[page.id];
+    if (!siteId) return;
+    onUpdate(siteId, { facebookPageId: page.id, facebookPageAccessToken: page.accessToken });
+    setGuardado(page.id);
+    setTimeout(() => setGuardado(null), 3000);
+  };
+
+  return (
+    <div className="bg-slate-900/30 border border-slate-800 rounded-xl mb-6 overflow-hidden">
+      <button onClick={() => setOpen((v) => !v)} className="w-full flex items-center justify-between px-5 py-4 text-left">
+        <span className="text-white font-semibold text-sm">🔧 Herramienta: canjear token corto por token de larga duración</span>
+        <span className="text-slate-500">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="px-5 pb-5 border-t border-slate-800/50 pt-4">
+          <p className="text-xs text-slate-500 mb-3">
+            Pegá acá el token de <strong className="text-slate-300">corta duración</strong> que sacaste del{" "}
+            <a href="https://developers.facebook.com/tools/explorer" target="_blank" rel="noreferrer" className="text-cyan-400 underline">
+              Graph API Explorer
+            </a>{" "}
+            (con permisos pages_show_list, pages_read_engagement, pages_manage_posts). El resto lo hace esta herramienta sola: canjea a token
+            largo, trae tus Páginas, y te deja el resultado listo para copiar o guardar directo en un sitio.
+          </p>
+          <textarea
+            value={shortToken}
+            onChange={(e) => setShortToken(e.target.value)}
+            placeholder="EAAxxxxxxxxxxxxxxxxxxxx..."
+            rows={3}
+            className="input w-full font-mono text-xs mb-3"
+          />
+          <button
+            onClick={canjear}
+            disabled={loading || !shortToken.trim()}
+            className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition-colors"
+          >
+            {loading ? "⟳ Canjeando..." : "Canjear token"}
+          </button>
+
+          {error && <p className="text-red-400 text-xs mt-3">⚠ {error}</p>}
+
+          {resultado && (
+            <div className="mt-5 space-y-4">
+              <div className="bg-slate-950 border border-slate-800 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-mono text-slate-500 uppercase">
+                    Token de usuario de larga duración {resultado.expiresInDays ? `(~${resultado.expiresInDays} días)` : ""}
+                  </span>
+                  <CopyBtn text={resultado.longLivedUserToken} />
+                </div>
+                <p className="text-[10px] font-mono text-slate-400 break-all">{resultado.longLivedUserToken}</p>
+                <p className="text-[10px] text-slate-600 mt-1">Este no es el que necesitás guardar -- es un paso intermedio. Los tokens de las Páginas de abajo son los buenos.</p>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-slate-300 mb-2">Tus Páginas ({resultado.pages.length}):</p>
+                <div className="space-y-2">
+                  {resultado.pages.map((p) => (
+                    <div key={p.id} className="bg-slate-950 border border-slate-800 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-semibold text-white">{p.name}</span>
+                        <CopyBtn text={p.accessToken} />
+                      </div>
+                      <p className="text-[10px] text-slate-500 mb-1">Page ID: {p.id}</p>
+                      <p className="text-[10px] font-mono text-slate-400 break-all mb-2">{p.accessToken}</p>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={siteElegido[p.id] || ""}
+                          onChange={(e) => setSiteElegido((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                          className="input text-xs py-1.5 flex-1"
+                        >
+                          <option value="">Guardar en el sitio...</option>
+                          {sites.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.emoji} {s.nombre}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => guardarEnSitio(p)}
+                          disabled={!siteElegido[p.id]}
+                          className="text-xs font-bold px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-500 disabled:opacity-30 text-white flex-shrink-0"
+                        >
+                          {guardado === p.id ? "✓ Guardado" : "Guardar"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
