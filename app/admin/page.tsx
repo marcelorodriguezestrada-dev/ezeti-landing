@@ -65,6 +65,18 @@ function CopyBtn({ text, small }: { text: string; small?: boolean }) {
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics" | "leads" | "imagenes" | "cac" | "automatizacion">("campanas");
+  const [fbConectadoMsg, setFbConectadoMsg] = useState("");
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get("tab");
+    if (tabParam) setTab(tabParam as typeof tab);
+    const fbConectado = params.get("fbConectado");
+    if (fbConectado) {
+      setFbConectadoMsg(fbConectado === "1" ? "✓ Página de Facebook conectada correctamente." : `✓ "${fbConectado}" conectada correctamente.`);
+      window.history.replaceState({}, "", "/admin");
+      setTimeout(() => setFbConectadoMsg(""), 6000);
+    }
+  }, []);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -257,6 +269,11 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
+      {fbConectadoMsg && (
+        <div className="bg-green-500/10 border-b border-green-500/30 text-green-400 text-sm text-center py-2 px-4">
+          {fbConectadoMsg}
+        </div>
+      )}
       <header className="border-b border-slate-800/50 sticky top-0 bg-slate-950/90 backdrop-blur-xl z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <span className="text-lg font-mono font-bold text-white">
@@ -1355,24 +1372,34 @@ function SiteRow({ site: s, onUpdate, onDelete }: { site: Site & { hasFacebookTo
           </div>
           <div className="pt-2 border-t border-slate-800/50">
             <p className="text-xs font-mono text-blue-400/80 uppercase mb-2">👥 Página de Facebook de este negocio (para publicar campañas)</p>
-            <div className="grid md:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Page ID</label>
-                <input className="input" placeholder="ej. 123456789012345" value={facebookPageId} onChange={(e) => setFacebookPageId(e.target.value)} />
+            <a
+              href={`/api/admin/facebook/connect?siteId=${s.id}`}
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-colors mb-3"
+            >
+              👥 Conectar con Facebook (recomendado)
+            </a>
+            <p className="text-[10px] text-slate-600 mb-3">Un click, elegís la Página, listo. Reemplaza directamente los campos manuales de abajo.</p>
+            <details className="text-xs text-slate-500">
+              <summary className="cursor-pointer hover:text-slate-300">O cargalo a mano (avanzado)</summary>
+              <div className="grid md:grid-cols-2 gap-3 mt-2">
+                <div>
+                  <label className="block text-xs font-mono text-slate-500 uppercase mb-1">Page ID</label>
+                  <input className="input" placeholder="ej. 123456789012345" value={facebookPageId} onChange={(e) => setFacebookPageId(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-slate-500 uppercase mb-1">
+                    Access Token {s.hasFacebookToken ? "(dejalo vacío para mantener el actual)" : ""}
+                  </label>
+                  <input
+                    className="input"
+                    type="password"
+                    placeholder={s.hasFacebookToken ? "•••••••• ya configurado" : "token de larga duración"}
+                    value={facebookPageAccessToken}
+                    onChange={(e) => setFacebookPageAccessToken(e.target.value)}
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-mono text-slate-500 uppercase mb-1">
-                  Access Token {s.hasFacebookToken ? "(dejalo vacío para mantener el actual)" : ""}
-                </label>
-                <input
-                  className="input"
-                  type="password"
-                  placeholder={s.hasFacebookToken ? "•••••••• ya configurado" : "token de larga duración"}
-                  value={facebookPageAccessToken}
-                  onChange={(e) => setFacebookPageAccessToken(e.target.value)}
-                />
-              </div>
-            </div>
+            </details>
             <label className="flex items-center gap-2 mt-3 text-xs text-slate-400 cursor-pointer">
               <input
                 type="checkbox"
