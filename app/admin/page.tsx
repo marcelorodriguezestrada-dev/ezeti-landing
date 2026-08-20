@@ -1328,6 +1328,8 @@ function AutomatizacionTab({ campaigns }: { campaigns: Campaign[] }) {
 
 function TokenExchangeTool({ sites, onUpdate }: { sites: Site[]; onUpdate: (id: string, patch: Partial<Site>) => void }) {
   const [open, setOpen] = useState(false);
+  const [appId, setAppId] = useState("");
+  const [appSecret, setAppSecret] = useState("");
   const [shortToken, setShortToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -1347,7 +1349,7 @@ function TokenExchangeTool({ sites, onUpdate }: { sites: Site[]; onUpdate: (id: 
       const res = await fetch("/api/admin/facebook/exchange-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shortToken }),
+        body: JSON.stringify({ shortToken, appId, appSecret }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -1383,6 +1385,32 @@ function TokenExchangeTool({ sites, onUpdate }: { sites: Site[]; onUpdate: (id: 
             (con permisos pages_show_list, pages_read_engagement, pages_manage_posts). El resto lo hace esta herramienta sola: canjea a token
             largo, trae tus Páginas, y te deja el resultado listo para copiar o guardar directo en un sitio.
           </p>
+
+          <div className="grid md:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">App ID (de tu app de Meta)</label>
+              <input
+                value={appId}
+                onChange={(e) => setAppId(e.target.value)}
+                placeholder="ej. 1234567890123456"
+                className="input w-full text-xs"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">App Secret</label>
+              <input
+                type="password"
+                value={appSecret}
+                onChange={(e) => setAppSecret(e.target.value)}
+                placeholder="Configuración → Básica → Mostrar"
+                className="input w-full text-xs"
+              />
+            </div>
+          </div>
+          <p className="text-[10px] text-slate-600 mb-3">
+            Si ya configuraste <code>FACEBOOK_APP_ID</code>/<code>FACEBOOK_APP_SECRET</code> como variable de entorno, podés dejar estos dos campos vacíos.
+          </p>
+
           <textarea
             value={shortToken}
             onChange={(e) => setShortToken(e.target.value)}

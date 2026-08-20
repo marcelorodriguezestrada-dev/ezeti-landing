@@ -2,17 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { shortToken } = await req.json();
+    const { shortToken, appId, appSecret } = await req.json();
     if (!shortToken || !shortToken.trim()) {
       return NextResponse.json({ error: "Pegá el token corto que sacaste del Graph API Explorer." }, { status: 400 });
     }
-    if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET) {
-      return NextResponse.json({ error: "Falta configurar FACEBOOK_APP_ID / FACEBOOK_APP_SECRET en el servidor." }, { status: 500 });
+
+    const FACEBOOK_APP_ID = appId?.trim() || process.env.FACEBOOK_APP_ID;
+    const FACEBOOK_APP_SECRET = appSecret?.trim() || process.env.FACEBOOK_APP_SECRET;
+
+    if (!FACEBOOK_APP_ID || !FACEBOOK_APP_SECRET) {
+      return NextResponse.json({ error: "Faltan el App ID y/o el App Secret (pegalos en el formulario, o configuralos como variables de entorno)." }, { status: 400 });
     }
 
     // Corto → largo (~60 días, sin fecha fija de vencimiento en la práctica)
     const longRes = await fetch(
-      `https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${process.env.FACEBOOK_APP_ID}&client_secret=${process.env.FACEBOOK_APP_SECRET}&fb_exchange_token=${encodeURIComponent(shortToken.trim())}`
+      `https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${FACEBOOK_APP_ID}&client_secret=${FACEBOOK_APP_SECRET}&fb_exchange_token=${encodeURIComponent(shortToken.trim())}`
     );
     const longData = await longRes.json();
     if (longData.error) {
