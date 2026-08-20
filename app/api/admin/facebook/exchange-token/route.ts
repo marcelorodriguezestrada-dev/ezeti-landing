@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSettingsDoc } from "@/lib/firebaseAdmin";
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,11 +8,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Pegá el token corto que sacaste del Graph API Explorer." }, { status: 400 });
     }
 
-    const FACEBOOK_APP_ID = appId?.trim() || process.env.FACEBOOK_APP_ID;
-    const FACEBOOK_APP_SECRET = appSecret?.trim() || process.env.FACEBOOK_APP_SECRET;
+    let FACEBOOK_APP_ID = appId?.trim() || process.env.FACEBOOK_APP_ID;
+    let FACEBOOK_APP_SECRET = appSecret?.trim() || process.env.FACEBOOK_APP_SECRET;
+
+    // Si no vinieron en el request ni hay env vars, buscamos lo último guardado.
+    if (!FACEBOOK_APP_ID || !FACEBOOK_APP_SECRET) {
+      const settingsSnap = await getSettingsDoc().get();
+      const settings = settingsSnap.exists ? settingsSnap.data()! : {};
+      FACEBOOK_APP_ID = FACEBOOK_APP_ID || settings.facebookAppId;
+      FACEBOOK_APP_SECRET = FACEBOOK_APP_SECRET || settings.facebookAppSecret;
+    }
 
     if (!FACEBOOK_APP_ID || !FACEBOOK_APP_SECRET) {
       return NextResponse.json({ error: "Faltan el App ID y/o el App Secret (pegalos en el formulario, o configuralos como variables de entorno)." }, { status: 400 });
+    }
+
+    // Guardamos lo que nos pasaron para la próxima vez -- así no hay que
+    // volver a tipearlo cada vez que se abre la herramienta.
+    if (appId?.trim() || appSecret?.trim()) {
+      await getSettingsDoc().set(
+        { ...(appId?.trim() ? { facebookAppId: appId.trim() } : {}), ...(appSecret?.trim() ? { facebookAppSecret: appSecret.trim() } : {}) },
+        { merge: true }
+      );
     }
 
     // Corto → largo (~60 días, sin fecha fija de vencimiento en la práctica)

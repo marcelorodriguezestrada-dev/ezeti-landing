@@ -1330,7 +1330,18 @@ function TokenExchangeTool({ sites, onUpdate }: { sites: Site[]; onUpdate: (id: 
   const [open, setOpen] = useState(false);
   const [appId, setAppId] = useState("");
   const [appSecret, setAppSecret] = useState("");
+  const [hasSavedSecret, setHasSavedSecret] = useState(false);
   const [shortToken, setShortToken] = useState("");
+
+  useEffect(() => {
+    fetch("/api/admin/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.facebookAppId) setAppId(data.facebookAppId);
+        setHasSavedSecret(!!data.hasFacebookAppSecret);
+      })
+      .catch(() => {});
+  }, []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [resultado, setResultado] = useState<{
@@ -1354,6 +1365,7 @@ function TokenExchangeTool({ sites, onUpdate }: { sites: Site[]; onUpdate: (id: 
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setResultado(data);
+      if (appSecret.trim()) setHasSavedSecret(true);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -1397,18 +1409,20 @@ function TokenExchangeTool({ sites, onUpdate }: { sites: Site[]; onUpdate: (id: 
               />
             </div>
             <div>
-              <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">App Secret</label>
+              <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">
+                App Secret {hasSavedSecret ? "(ya guardado -- dejalo vacío para reusar el mismo)" : ""}
+              </label>
               <input
                 type="password"
                 value={appSecret}
                 onChange={(e) => setAppSecret(e.target.value)}
-                placeholder="Configuración → Básica → Mostrar"
+                placeholder={hasSavedSecret ? "•••••••• ya configurado" : "Configuración → Básica → Mostrar"}
                 className="input w-full text-xs"
               />
             </div>
           </div>
           <p className="text-[10px] text-slate-600 mb-3">
-            Si ya configuraste <code>FACEBOOK_APP_ID</code>/<code>FACEBOOK_APP_SECRET</code> como variable de entorno, podés dejar estos dos campos vacíos.
+            El App ID y App Secret se guardan solos la primera vez que canjeás -- la próxima vez que abras esta herramienta ya van a estar cargados.
           </p>
 
           <textarea
