@@ -1047,6 +1047,7 @@ function SitiosTab({
         </div>
       )}
 
+      <AyudaCrearPaginaFacebook />
       <TokenExchangeTool sites={sites} onUpdate={onUpdate} />
 
       <div className="space-y-3">
@@ -1322,6 +1323,64 @@ function AutomatizacionTab({ campaigns }: { campaigns: Campaign[] }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function AyudaCrearPaginaFacebook() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="bg-slate-900/30 border border-slate-800 rounded-xl mb-4 overflow-hidden">
+      <button onClick={() => setOpen((v) => !v)} className="w-full flex items-center justify-between px-5 py-4 text-left">
+        <span className="text-white font-semibold text-sm">📖 Ayuda: cómo crear una Página de Facebook nueva</span>
+        <span className="text-slate-500">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="px-5 pb-5 border-t border-slate-800/50 pt-4 text-sm text-slate-400 space-y-4">
+          <div>
+            <p className="text-slate-200 font-semibold mb-1">1. Crear la Página</p>
+            <ul className="list-disc list-inside space-y-1 text-slate-500">
+              <li>
+                Andá a{" "}
+                <a href="https://www.facebook.com/pages/create" target="_blank" rel="noreferrer" className="text-cyan-400 underline">
+                  facebook.com/pages/create
+                </a>
+              </li>
+              <li>Nombre: el del negocio (ej. "Ezeti", "Tierra Viva")</li>
+              <li>
+                Categoría: elegí una que refleje el rubro real (ej. "Empresa de software", "Consultoría de TI") -- ojo con dejarla en una
+                categoría random tipo "Deportes y recreación" por apurar el formulario
+              </li>
+              <li>Click en "Crear página"</li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-slate-200 font-semibold mb-1">2. Completar el perfil básico</p>
+            <ul className="list-disc list-inside space-y-1 text-slate-500">
+              <li>Foto de perfil (logo) y foto de portada</li>
+              <li>"Editar información de la Página" → descripción, sitio web, contacto</li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-slate-200 font-semibold mb-1">3. Sos admin automático</p>
+            <p className="text-slate-500">Al crearla ya quedás como administrador, no hace falta nada extra.</p>
+          </div>
+          <div>
+            <p className="text-slate-200 font-semibold mb-1">4. Conectarla acá abajo</p>
+            <ul className="list-disc list-inside space-y-1 text-slate-500">
+              <li>
+                Andá al{" "}
+                <a href="https://developers.facebook.com/tools/explorer" target="_blank" rel="noreferrer" className="text-cyan-400 underline">
+                  Graph API Explorer
+                </a>{" "}
+                → generá un token corto nuevo (app "Ezeti Marketing", permisos pages_show_list / pages_read_engagement / pages_manage_posts)
+              </li>
+              <li>Pegalo en la herramienta de canje de acá abajo (el App ID/Secret ya quedan guardados de la vez pasada)</li>
+              <li>La lista de páginas ahora va a incluir también la nueva -- elegí a qué sitio guardarla y tocá "Guardar"</li>
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
