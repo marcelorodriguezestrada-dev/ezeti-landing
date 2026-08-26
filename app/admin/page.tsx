@@ -1457,6 +1457,29 @@ function TokenExchangeTool({ sites, onUpdate }: { sites: Site[]; onUpdate: (id: 
             largo, trae tus Páginas, y te deja el resultado listo para copiar o guardar directo en un sitio.
           </p>
 
+          <details className="text-xs text-slate-500 mb-3 bg-slate-950/50 border border-slate-800/70 rounded-lg px-3 py-2">
+            <summary className="cursor-pointer text-cyan-400 hover:text-cyan-300 font-semibold">¿Dónde consigo el App ID y el App Secret?</summary>
+            <ol className="list-decimal list-inside space-y-1 mt-2 text-slate-500">
+              <li>
+                Andá a{" "}
+                <a href="https://developers.facebook.com/apps" target="_blank" rel="noreferrer" className="text-cyan-400 underline">
+                  developers.facebook.com/apps
+                </a>
+              </li>
+              <li>Entrá a tu app "Ezeti Marketing"</li>
+              <li>Menú lateral izquierdo → Configuración → Básica</li>
+              <li>
+                Ahí vas a ver: <strong className="text-slate-300">Identificador de la app</strong> (App ID, un número visible directo) y{" "}
+                <strong className="text-slate-300">Clave secreta de la aplicación</strong> (App Secret, tapada con puntitos -- click en
+                "Mostrar", te pide tu contraseña de Facebook)
+              </li>
+            </ol>
+            <p className="mt-2 text-slate-600">
+              Si abajo estos dos campos ya dicen "guardado"/"ya configurado", no hace falta que repitas esto -- dejalos vacíos y pegá
+              directo el token corto.
+            </p>
+          </details>
+
           <div className="grid md:grid-cols-2 gap-3 mb-3">
             <div>
               <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">App ID (de tu app de Meta)</label>
