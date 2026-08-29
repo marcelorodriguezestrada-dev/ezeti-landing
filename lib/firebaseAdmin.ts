@@ -43,6 +43,10 @@ export function getLeadsCol() {
   return getDb().collection("leads");
 }
 
+export function getProspectosCol() {
+  return getDb().collection("prospectos");
+}
+
 export function getImagesCol() {
   return getDb().collection("images");
 }

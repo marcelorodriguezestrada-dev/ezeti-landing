@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import type { Campaign, Plataforma, Site, Lead, MediaImage, Coupon } from "@/lib/types";
+import type { Campaign, Plataforma, Site, Lead, MediaImage, Coupon, Prospecto, ProspectoStatus } from "@/lib/types";
 
 const PLATAFORMAS: { value: Plataforma; label: string; icon: string }[] = [
   { value: "instagram", label: "Instagram", icon: "📸" },
@@ -64,7 +64,7 @@ function CopyBtn({ text, small }: { text: string; small?: boolean }) {
 }
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics" | "leads" | "imagenes" | "cac" | "automatizacion">("campanas");
+  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics" | "leads" | "imagenes" | "cac" | "automatizacion" | "prospectos">("campanas");
   const [fbConectadoMsg, setFbConectadoMsg] = useState("");
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -284,6 +284,7 @@ export default function AdminDashboard() {
               { id: "generar", label: "✨ Generar" },
               { id: "campanas", label: "📋 Campañas" },
               { id: "leads", label: "👥 Leads" },
+              { id: "prospectos", label: "🤝 Prospectos" },
               { id: "calendario", label: "📅 Calendario" },
               { id: "analytics", label: "📊 Analytics" },
               { id: "sitios", label: "🌐 Sitios" },
@@ -527,6 +528,7 @@ export default function AdminDashboard() {
             onGenerarGuion={generarGuion}
           />
         )}
+        {tab === "prospectos" && <ProspectosTab />}
         {tab === "analytics" && <AnalyticsTab analytics={analytics} campaigns={campaigns} />}
         {tab === "sitios" && <SitiosTab sites={sites} onAdd={addSite} onUpdate={updateSite} onDelete={deleteSite} />}
         {tab === "automatizacion" && <AutomatizacionTab campaigns={campaigns} />}
@@ -1068,6 +1070,392 @@ const LEAD_STATUS_CONFIG: Record<Lead["status"], { label: string; color: string 
   cliente: { label: "✅ Cliente", color: "bg-emerald-500/20 text-emerald-400" },
   descartado: { label: "❌ Descartado", color: "bg-slate-800 text-slate-500" },
 };
+
+const CONTEXTOS_SUGERIDOS = ["Feria", "Contacto referido", "LinkedIn", "Expo", "Networking", "Cliente actual"];
+
+const STATUS_PROSPECTO: { id: ProspectoStatus; label: string; color: string }[] = [
+  { id: "nuevo", label: "Nuevo", color: "#94a3b8" },
+  { id: "contactado", label: "Contactado", color: "#60a5fa" },
+  { id: "en_conversacion", label: "En conversación", color: "#facc15" },
+  { id: "propuesta_enviada", label: "Propuesta enviada", color: "#22d3ee" },
+  { id: "ganado", label: "Ganado", color: "#4ade80" },
+  { id: "perdido", label: "Perdido", color: "#f87171" },
+];
+
+function ProspectosTab() {
+  const [prospectos, setProspectos] = useState<Prospecto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [form, setForm] = useState({
+    nombre: "",
+    empresa: "",
+    cargo: "",
+    contexto: "",
+    linkedinUrl: "",
+    sitioWebEmpresa: "",
+    productoOfrecido: "",
+    notasEncuentro: "",
+  });
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
+  const [expandido, setExpandido] = useState<string | null>(null);
+
+  const cargar = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/prospectos");
+      setProspectos(await res.json());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
+
+  const crear = async () => {
+    if (!form.nombre.trim()) {
+      setError("Ponele al menos un nombre.");
+      return;
+    }
+    setError("");
+    setGuardando(true);
+    try {
+      const res = await fetch("/api/admin/prospectos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setProspectos((prev) => [data, ...prev]);
+      setForm({ nombre: "", empresa: "", cargo: "", contexto: "", linkedinUrl: "", sitioWebEmpresa: "", productoOfrecido: "", notasEncuentro: "" });
+      setMostrarForm(false);
+      setExpandido(data.id);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const actualizar = async (id: string, patch: Partial<Prospecto>) => {
+    setProspectos((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    await fetch(`/api/admin/prospectos/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+  };
+
+  const borrar = async (id: string) => {
+    if (!confirm("¿Borrar este prospecto?")) return;
+    setProspectos((prev) => prev.filter((p) => p.id !== id));
+    await fetch(`/api/admin/prospectos/${id}`, { method: "DELETE" });
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h2 className="text-white font-bold text-lg">🤝 Prospectos</h2>
+          <p className="text-slate-500 text-sm">Contactos reales -- ferias, referidos, LinkedIn -- con análisis y seguimiento asistido por IA.</p>
+        </div>
+        <button
+          onClick={() => setMostrarForm((v) => !v)}
+          className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm px-4 py-2 rounded-lg transition-colors"
+        >
+          {mostrarForm ? "Cancelar" : "+ Nuevo prospecto"}
+        </button>
+      </div>
+
+      {mostrarForm && (
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-5 mb-6 space-y-3">
+          <div className="grid md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">Nombre *</label>
+              <input className="input w-full" placeholder="ej. Pablo Rormoser" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">Empresa</label>
+              <input className="input w-full" value={form.empresa} onChange={(e) => setForm({ ...form, empresa: e.target.value })} />
+            </div>
+          </div>
+          <div className="grid md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">Cargo</label>
+              <input className="input w-full" placeholder="ej. Gerente de Operaciones" value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">Producto ofrecido / de interés</label>
+              <input className="input w-full" placeholder="ej. TraceLink" value={form.productoOfrecido} onChange={(e) => setForm({ ...form, productoOfrecido: e.target.value })} />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">¿Dónde/cómo lo conociste?</label>
+            <div className="flex gap-1.5 flex-wrap mb-2">
+              {CONTEXTOS_SUGERIDOS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setForm({ ...form, contexto: c })}
+                  className={`text-xs px-2.5 py-1 rounded-full border ${form.contexto === c ? "bg-cyan-500/15 border-cyan-500 text-cyan-400" : "border-slate-700 text-slate-500"}`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+            <input
+              className="input w-full"
+              placeholder="ej. Feria de tecnología en Palermo, septiembre 2026"
+              value={form.contexto}
+              onChange={(e) => setForm({ ...form, contexto: e.target.value })}
+            />
+          </div>
+          <div className="grid md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">LinkedIn (opcional)</label>
+              <input className="input w-full" placeholder="https://linkedin.com/in/..." value={form.linkedinUrl} onChange={(e) => setForm({ ...form, linkedinUrl: e.target.value })} />
+            </div>
+            <div>
+              <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">Sitio web de su empresa (opcional)</label>
+              <input className="input w-full" placeholder="https://..." value={form.sitioWebEmpresa} onChange={(e) => setForm({ ...form, sitioWebEmpresa: e.target.value })} />
+              <p className="text-[10px] text-slate-600 mt-1">Si lo cargás, la IA lo lee de verdad antes de proponer algo.</p>
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">Notas del encuentro</label>
+            <textarea
+              className="input w-full"
+              rows={2}
+              placeholder="Qué charlaron, qué necesidad mencionó, qué quedó pendiente..."
+              value={form.notasEncuentro}
+              onChange={(e) => setForm({ ...form, notasEncuentro: e.target.value })}
+            />
+          </div>
+          {error && <p className="text-red-400 text-xs">{error}</p>}
+          <button onClick={crear} disabled={guardando} className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold text-sm px-4 py-2 rounded-lg">
+            {guardando ? "Guardando..." : "Guardar prospecto"}
+          </button>
+        </div>
+      )}
+
+      {loading ? (
+        <p className="text-slate-500 text-sm">Cargando...</p>
+      ) : prospectos.length === 0 ? (
+        <p className="text-slate-500 text-sm text-center py-10">Todavía no cargaste ningún prospecto.</p>
+      ) : (
+        <div className="space-y-3">
+          {prospectos.map((p) => (
+            <ProspectoCard
+              key={p.id}
+              p={p}
+              abierto={expandido === p.id}
+              onToggle={() => setExpandido(expandido === p.id ? null : p.id)}
+              onUpdate={(patch) => actualizar(p.id, patch)}
+              onDelete={() => borrar(p.id)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProspectoCard({
+  p,
+  abierto,
+  onToggle,
+  onUpdate,
+  onDelete,
+}: {
+  p: Prospecto;
+  abierto: boolean;
+  onToggle: () => void;
+  onUpdate: (patch: Partial<Prospecto>) => void;
+  onDelete: () => void;
+}) {
+  const [analizando, setAnalizando] = useState(false);
+  const [errorAnalisis, setErrorAnalisis] = useState("");
+  const [nuevaNota, setNuevaNota] = useState("");
+  const [guardandoNota, setGuardandoNota] = useState(false);
+  const [pensandoPaso, setPensandoPaso] = useState(false);
+  const statusInfo = STATUS_PROSPECTO.find((s) => s.id === p.status);
+
+  const analizar = async () => {
+    setAnalizando(true);
+    setErrorAnalisis("");
+    try {
+      const res = await fetch(`/api/admin/prospectos/${p.id}/analizar`, { method: "POST" });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      onUpdate({ analisisIA: data.analisis, propuestaIA: data.propuesta, mensajeSugerido: data.mensajeSugerido });
+    } catch (e) {
+      setErrorAnalisis((e as Error).message);
+    } finally {
+      setAnalizando(false);
+    }
+  };
+
+  const agregarNota = async () => {
+    if (!nuevaNota.trim()) return;
+    setGuardandoNota(true);
+    try {
+      const res = await fetch(`/api/admin/prospectos/${p.id}/seguimiento`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texto: nuevaNota }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      onUpdate({ seguimiento: data.seguimiento });
+      setNuevaNota("");
+    } finally {
+      setGuardandoNota(false);
+    }
+  };
+
+  const pedirProximoPaso = async () => {
+    setPensandoPaso(true);
+    try {
+      const res = await fetch(`/api/admin/prospectos/${p.id}/proximo-paso`, { method: "POST" });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      onUpdate({ proximoPasoIA: data.proximoPasoIA });
+    } finally {
+      setPensandoPaso(false);
+    }
+  };
+
+  return (
+    <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+      <div className="flex items-center gap-3 px-5 py-4 cursor-pointer" onClick={onToggle}>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-white font-semibold text-sm">{p.nombre}</span>
+            {p.empresa && <span className="text-slate-500 text-xs">· {p.empresa}</span>}
+            {p.contexto && <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">{p.contexto}</span>}
+          </div>
+          {p.productoOfrecido && <p className="text-xs text-slate-500 mt-0.5">Interés: {p.productoOfrecido}</p>}
+        </div>
+        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0" style={{ background: `${statusInfo?.color}22`, color: statusInfo?.color }}>
+          {statusInfo?.label}
+        </span>
+        <span className="text-slate-500 flex-shrink-0">{abierto ? "▲" : "▼"}</span>
+      </div>
+
+      {abierto && (
+        <div className="px-5 pb-5 border-t border-slate-800/50 pt-4 space-y-4">
+          <div className="flex flex-wrap gap-1.5">
+            {STATUS_PROSPECTO.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => onUpdate({ status: s.id })}
+                className="text-[10px] font-bold px-2.5 py-1 rounded-full border transition-colors"
+                style={{
+                  borderColor: p.status === s.id ? s.color : "#334155",
+                  background: p.status === s.id ? `${s.color}22` : "transparent",
+                  color: p.status === s.id ? s.color : "#64748b",
+                }}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          {p.notasEncuentro && (
+            <div>
+              <p className="text-[10px] font-mono text-slate-500 uppercase mb-1">Notas del encuentro</p>
+              <p className="text-sm text-slate-400">{p.notasEncuentro}</p>
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-3 text-xs">
+            {p.linkedinUrl && (
+              <a href={p.linkedinUrl} target="_blank" rel="noreferrer" className="text-cyan-400 underline">
+                Ver LinkedIn ↗
+              </a>
+            )}
+            {p.sitioWebEmpresa && (
+              <a href={p.sitioWebEmpresa} target="_blank" rel="noreferrer" className="text-cyan-400 underline">
+                Sitio de la empresa ↗
+              </a>
+            )}
+          </div>
+
+          {!p.analisisIA ? (
+            <button
+              onClick={analizar}
+              disabled={analizando}
+              className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold text-xs px-4 py-2 rounded-lg"
+            >
+              {analizando ? "⟳ Analizando..." : "🔍 Analizar y proponer"}
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <div className="bg-slate-950 border border-slate-800 rounded-lg p-3">
+                <p className="text-[10px] font-mono text-slate-500 uppercase mb-1">Análisis</p>
+                <p className="text-sm text-slate-300">{p.analisisIA}</p>
+              </div>
+              <div className="bg-slate-950 border border-slate-800 rounded-lg p-3">
+                <p className="text-[10px] font-mono text-slate-500 uppercase mb-1">Qué proponerle</p>
+                <p className="text-sm text-slate-300">{p.propuestaIA}</p>
+              </div>
+              <div className="bg-slate-950 border border-cyan-500/20 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] font-mono text-cyan-400 uppercase">Mensaje sugerido</p>
+                  <CopyBtn text={p.mensajeSugerido || ""} small />
+                </div>
+                <p className="text-sm text-slate-300">{p.mensajeSugerido}</p>
+              </div>
+              <button onClick={analizar} disabled={analizando} className="text-xs text-slate-500 hover:text-slate-300">
+                {analizando ? "⟳ Reanalizando..." : "↺ Reanalizar"}
+              </button>
+            </div>
+          )}
+          {errorAnalisis && <p className="text-red-400 text-xs">⚠ {errorAnalisis}</p>}
+
+          <div className="border-t border-slate-800/50 pt-4">
+            <p className="text-[10px] font-mono text-slate-500 uppercase mb-2">Seguimiento</p>
+            <div className="space-y-2 mb-3">
+              {(p.seguimiento || []).length === 0 && <p className="text-xs text-slate-600">Sin notas de seguimiento todavía.</p>}
+              {(p.seguimiento || [])
+                .slice()
+                .reverse()
+                .map((n, i) => (
+                  <div key={i} className="text-xs text-slate-400 flex gap-2">
+                    <span className="text-slate-600 flex-shrink-0">{new Date(n.fecha).toLocaleDateString("es-AR")}</span>
+                    <span>{n.texto}</span>
+                  </div>
+                ))}
+            </div>
+            <div className="flex gap-2 mb-3">
+              <input
+                className="input flex-1 text-xs"
+                placeholder="Agregar nota de seguimiento..."
+                value={nuevaNota}
+                onChange={(e) => setNuevaNota(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && agregarNota()}
+              />
+              <button onClick={agregarNota} disabled={guardandoNota} className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-3 py-1.5 rounded-lg">
+                Agregar
+              </button>
+            </div>
+
+            <button onClick={pedirProximoPaso} disabled={pensandoPaso} className="text-xs font-bold text-cyan-400 hover:text-cyan-300">
+              {pensandoPaso ? "⟳ Pensando..." : "🧠 ¿Cuál es el próximo paso?"}
+            </button>
+            {p.proximoPasoIA && <p className="text-sm text-slate-300 bg-slate-950 border border-slate-800 rounded-lg p-3 mt-2">{p.proximoPasoIA}</p>}
+          </div>
+
+          <button onClick={onDelete} className="text-xs text-slate-600 hover:text-red-400">
+            🗑 Borrar prospecto
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function LeadsTab({
   leads, calLink, setCalLink, onGuardarCalLink, onUpdate, onDelete, onGenerarGuion,

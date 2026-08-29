@@ -16,6 +16,33 @@ export interface Site {
 
 export type LeadStatus = "nuevo" | "quiere_agendar" | "contactado" | "reunion_agendada" | "cliente" | "descartado";
 
+export type ProspectoStatus = "nuevo" | "contactado" | "en_conversacion" | "propuesta_enviada" | "ganado" | "perdido";
+
+export interface ProspectoNota {
+  texto: string;
+  fecha: number;
+}
+
+export interface Prospecto {
+  id: string;
+  nombre: string;
+  empresa: string;
+  cargo: string;
+  contexto: string; // cómo lo conociste: feria, referido, LinkedIn, expo, etc.
+  linkedinUrl: string;
+  sitioWebEmpresa: string;
+  productoOfrecido: string; // qué se le ofreció o qué te parece que le interesa
+  notasEncuentro: string; // notas libres del primer encuentro
+  analisisIA: string | null;
+  propuestaIA: string | null;
+  mensajeSugerido: string | null;
+  proximoPasoIA: string | null; // lo que sugiere la IA después de revisar el seguimiento
+  status: ProspectoStatus;
+  seguimiento: ProspectoNota[];
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface Lead {
   id: string;
   nombre: string;
