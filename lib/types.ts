@@ -54,6 +54,12 @@ export interface Lead {
   origen: string; // utm_source o "directo"
   status: LeadStatus;
   guionGenerado: string | null;
+  // Fase Semilla (producto interactivo de Seti) -- se completan en un
+  // segundo paso, después de que el lead ya está creado.
+  tipoNegocio?: string;
+  objetivoSemilla?: string;
+  etapaActual?: string;
+  detalleLibre?: string;
   createdAt: number;
 }
 

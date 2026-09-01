@@ -99,6 +99,12 @@ export default function LandingPage() {
             <a href="#nosotros" className="transition-colors hover:text-white">Nosotros</a>
           </nav>
           <a
+            href="/seti"
+            className="hidden sm:flex items-center gap-2 rounded-full border border-cyan-500/40 px-4 py-2 text-sm font-semibold text-cyan-400 transition-all hover:bg-cyan-500/10"
+          >
+            🌱 Probá tu idea gratis
+          </a>
+          <a
             href={whatsapp}
             target="_blank"
             rel="noreferrer"
