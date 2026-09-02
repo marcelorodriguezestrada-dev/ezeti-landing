@@ -60,7 +60,27 @@ export interface Lead {
   objetivoSemilla?: string;
   etapaActual?: string;
   detalleLibre?: string;
+  vistaPreviaGenerada?: VistaPreviaLanding | VistaPreviaEcommerce | null;
   createdAt: number;
+}
+
+export interface VistaPreviaLanding {
+  tipo: "landing";
+  nombreNegocio: string;
+  tagline: string;
+  colorPrimario: string;
+  hero: { titulo: string; subtitulo: string; cta: string };
+  sobre: string;
+  servicios: { titulo: string; descripcion: string }[];
+  contacto: string;
+}
+
+export interface VistaPreviaEcommerce {
+  tipo: "ecommerce";
+  nombreNegocio: string;
+  tagline: string;
+  colorPrimario: string;
+  productos: { nombre: string; precio: string; descripcion: string }[];
 }
 
 export type Plataforma = "instagram" | "linkedin" | "facebook" | "tiktok";
