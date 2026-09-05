@@ -529,7 +529,7 @@ export default function AdminDashboard() {
           />
         )}
         {tab === "prospectos" && <ProspectosTab />}
-        {tab === "analytics" && <AnalyticsTab analytics={analytics} campaigns={campaigns} />}
+        {tab === "analytics" && <AnalyticsTab analytics={analytics} campaigns={campaigns} leads={leads} />}
         {tab === "sitios" && <SitiosTab sites={sites} onAdd={addSite} onUpdate={updateSite} onDelete={deleteSite} />}
         {tab === "automatizacion" && <AutomatizacionTab campaigns={campaigns} />}
         {tab === "imagenes" && <ImagenesTab />}
@@ -1335,6 +1335,7 @@ function ProspectoCard({
             <span className="text-white font-semibold text-sm">{p.nombre}</span>
             {p.empresa && <span className="text-slate-500 text-xs">· {p.empresa}</span>}
             {p.contexto && <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">{p.contexto}</span>}
+            {p.leadId && <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400">🌱 Vino de Seti</span>}
           </div>
           {p.productoOfrecido && <p className="text-xs text-slate-500 mt-0.5">Interés: {p.productoOfrecido}</p>}
         </div>
@@ -2073,10 +2074,11 @@ function SiteRow({ site: s, onUpdate, onDelete }: { site: Site & { hasFacebookTo
 }
 
 function AnalyticsTab({
-  analytics, campaigns,
+  analytics, campaigns, leads,
 }: {
   analytics: { totalVisitas: number; porDia: { key: string; visitas: number }[]; porMes: { key: string; visitas: number }[]; porAnio: { key: string; visitas: number }[]; ranking: { producto: string; visitas: number }[] } | null;
   campaigns: Campaign[];
+  leads: Lead[];
 }) {
   const [periodo, setPeriodo] = useState<"dia" | "mes" | "anio">("dia");
 
@@ -2102,8 +2104,45 @@ function AnalyticsTab({
     return key;
   };
 
+  const leadsSeti = leads.filter((l) => l.origen === "seti_interactivo");
+  const embudoSeti = [
+    { label: "Empezaron (dejaron sus datos)", n: leadsSeti.length },
+    { label: "Completaron la Fase Semilla", n: leadsSeti.filter((l) => l.tipoNegocio).length },
+    { label: "Vieron su vista previa", n: leadsSeti.filter((l) => l.vistaPreviaGenerada).length },
+    { label: "Dijeron \"quiero esto de verdad\"", n: leadsSeti.filter((l) => l.convertidoAProspectoId).length },
+  ];
+  const baseEmbudo = embudoSeti[0].n || 1;
+
   return (
     <div className="space-y-6">
+      {/* EMBUDO DE SETI */}
+      <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-5">
+        <p className="text-white font-bold text-sm mb-1">🌱 Embudo del producto interactivo (Seti)</p>
+        <p className="text-slate-500 text-xs mb-4">Cuántos usaron la idea rápida, y cuántos llegaron hasta el final.</p>
+        {leadsSeti.length === 0 ? (
+          <p className="text-slate-600 text-sm">Todavía nadie usó el flujo de Seti.</p>
+        ) : (
+          <div className="space-y-3">
+            {embudoSeti.map((paso, i) => {
+              const pct = Math.round((paso.n / baseEmbudo) * 100);
+              return (
+                <div key={i}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-300">{paso.label}</span>
+                    <span className="text-slate-400 font-mono">
+                      {paso.n} · {pct}%
+                    </span>
+                  </div>
+                  <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-cyan-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* DESTACADOS */}
       <div className="grid md:grid-cols-3 gap-4">
         <div className="bg-slate-900/50 border border-cyan-500/30 rounded-xl p-4">

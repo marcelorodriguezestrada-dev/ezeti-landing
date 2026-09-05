@@ -25,6 +25,7 @@ export interface ProspectoNota {
 
 export interface Prospecto {
   id: string;
+  leadId?: string; // si vino del flujo interactivo de Seti, el Lead que lo originó
   nombre: string;
   empresa: string;
   cargo: string;
@@ -61,6 +62,7 @@ export interface Lead {
   etapaActual?: string;
   detalleLibre?: string;
   vistaPreviaGenerada?: VistaPreviaLanding | VistaPreviaEcommerce | null;
+  convertidoAProspectoId?: string | null; // si ya se creó el Prospecto correspondiente, para no duplicar
   createdAt: number;
 }
 

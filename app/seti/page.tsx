@@ -347,14 +347,16 @@ export default function SetiPage() {
             </BrowserFrame>
             <div className="text-center mt-6">
               <p className="text-slate-500 text-sm mb-3">Esto es solo el punto de partida — lo armamos de verdad, a tu medida.</p>
-              <a
-                href={`https://wa.me/?text=${encodeURIComponent(`¡Hola! Probé la vista previa de Seti y quiero avanzar con esto de verdad. Mi idea: ${semilla.detalleLibre || semilla.tipoNegocio}`)}`}
-                target="_blank"
-                rel="noreferrer"
+              <button
+                onClick={() => {
+                  if (leadId) fetch(`/api/seti/lead/${leadId}/convertir`, { method: "POST" }).catch(() => {});
+                  const msg = `¡Hola! Probé la vista previa de Seti y quiero avanzar con esto de verdad. Mi idea: ${semilla.detalleLibre || semilla.tipoNegocio}`;
+                  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+                }}
                 className="inline-block bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-6 py-3 rounded-xl transition-colors"
               >
                 Quiero esto de verdad →
-              </a>
+              </button>
             </div>
           </div>
         )}
