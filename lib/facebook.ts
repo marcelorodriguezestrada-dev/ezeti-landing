@@ -34,6 +34,10 @@ export async function publicarEnFacebook(
   } else {
     body.append("message", mensaje);
   }
+  // Clave: sin esto, Facebook puede tratar el post como "sin publicar"
+  // (pensado para armar anuncios en Ads Manager), invisible en el timeline
+  // normal de la Página aunque la llamada a la API haya salido bien.
+  body.append("published", "true");
   body.append("access_token", token);
 
   const res = await fetch(endpoint, { method: "POST", body });
