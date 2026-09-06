@@ -438,6 +438,7 @@ export default function LandingPage() {
             <a href="#servicios" className="transition hover:text-white">Servicios</a>
             <a href="#productos" className="transition hover:text-white">Productos</a>
             <a href={whatsapp} target="_blank" rel="noreferrer" className="transition hover:text-white">WhatsApp</a>
+            <a href="/privacidad" className="transition hover:text-white">Privacidad</a>
           </div>
         </div>
       </footer>
