@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import type { Campaign, Plataforma, Site, Lead, MediaImage, Coupon, Prospecto, ProspectoStatus } from "@/lib/types";
+import type { Campaign, Plataforma, Site, Lead, MediaImage, Coupon, Prospecto, ProspectoStatus, ProyectoDev, EstadoProyectoDev, TicketDev, EstadoTicketDev, PrioridadTicketDev } from "@/lib/types";
 
 const PLATAFORMAS: { value: Plataforma; label: string; icon: string }[] = [
   { value: "instagram", label: "Instagram", icon: "📸" },
@@ -64,7 +64,7 @@ function CopyBtn({ text, small }: { text: string; small?: boolean }) {
 }
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics" | "leads" | "imagenes" | "cac" | "automatizacion" | "prospectos">("campanas");
+  const [tab, setTab] = useState<"generar" | "campanas" | "calendario" | "sitios" | "analytics" | "leads" | "imagenes" | "cac" | "automatizacion" | "prospectos" | "proyectos-dev">("campanas");
   const [fbConectadoMsg, setFbConectadoMsg] = useState("");
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -285,6 +285,7 @@ export default function AdminDashboard() {
               { id: "campanas", label: "📋 Campañas" },
               { id: "leads", label: "👥 Leads" },
               { id: "prospectos", label: "🤝 Prospectos" },
+              { id: "proyectos-dev", label: "🛠️ Proyectos" },
               { id: "calendario", label: "📅 Calendario" },
               { id: "analytics", label: "📊 Analytics" },
               { id: "sitios", label: "🌐 Sitios" },
@@ -529,6 +530,7 @@ export default function AdminDashboard() {
           />
         )}
         {tab === "prospectos" && <ProspectosTab />}
+        {tab === "proyectos-dev" && <ProyectosDevTab />}
         {tab === "analytics" && <AnalyticsTab analytics={analytics} campaigns={campaigns} leads={leads} />}
         {tab === "sitios" && <SitiosTab sites={sites} onAdd={addSite} onUpdate={updateSite} onDelete={deleteSite} />}
         {tab === "automatizacion" && <AutomatizacionTab campaigns={campaigns} />}
@@ -2529,6 +2531,388 @@ function StatBox({ label, value }: { label: string; value: string }) {
     <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
       <p className="text-[10px] font-mono text-slate-500 uppercase mb-1">{label}</p>
       <p className="text-xl font-bold text-white">{value}</p>
+    </div>
+  );
+}
+
+const ESTADO_PROYECTO_CONFIG: Record<EstadoProyectoDev, { label: string; color: string }> = {
+  activo: { label: "Activo", color: "bg-cyan-500/20 text-cyan-400" },
+  pausado: { label: "Pausado", color: "bg-amber-500/20 text-amber-400" },
+  finalizado: { label: "Finalizado", color: "bg-emerald-500/20 text-emerald-400" },
+};
+
+const ESTADO_TICKET_CONFIG: Record<EstadoTicketDev, { label: string; color: string }> = {
+  pendiente: { label: "Pendiente", color: "bg-slate-700 text-slate-300" },
+  en_progreso: { label: "En progreso", color: "bg-cyan-500/20 text-cyan-400" },
+  bloqueado: { label: "Bloqueado", color: "bg-red-500/20 text-red-400" },
+  hecho: { label: "Hecho", color: "bg-emerald-500/20 text-emerald-400" },
+};
+
+const PRIORIDAD_TICKET_CONFIG: Record<PrioridadTicketDev, { label: string; color: string }> = {
+  baja: { label: "Baja", color: "text-slate-500" },
+  media: { label: "Media", color: "text-amber-400" },
+  alta: { label: "Alta", color: "text-red-400" },
+};
+
+function fmtFecha(ts: number | null) {
+  if (!ts) return "Sin fecha";
+  return new Date(ts).toLocaleDateString("es-BO", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function ProyectosDevTab() {
+  const [proyectos, setProyectos] = useState<ProyectoDev[]>([]);
+  const [tickets, setTickets] = useState<TicketDev[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [proyectoAbierto, setProyectoAbierto] = useState<string | null>(null);
+  const [mostrarFormProyecto, setMostrarFormProyecto] = useState(false);
+  const [mostrarFormTicket, setMostrarFormTicket] = useState(false);
+  const [error, setError] = useState("");
+
+  const [formProyecto, setFormProyecto] = useState({ nombre: "", descripcion: "", cliente: "", fechaEntrega: "" });
+  const [formTicket, setFormTicket] = useState({ titulo: "", descripcion: "", prioridad: "media" as PrioridadTicketDev });
+
+  const cargar = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [pRes, tRes] = await Promise.all([fetch("/api/admin/proyectos-dev"), fetch("/api/admin/tickets-dev")]);
+      setProyectos(await pRes.json());
+      setTickets(await tRes.json());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
+
+  const crearProyecto = async () => {
+    if (!formProyecto.nombre.trim()) {
+      setError("Ponele un nombre al proyecto.");
+      return;
+    }
+    setError("");
+    const res = await fetch("/api/admin/proyectos-dev", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...formProyecto,
+        fechaEntrega: formProyecto.fechaEntrega ? new Date(formProyecto.fechaEntrega).getTime() : null,
+      }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      setError(data.error);
+      return;
+    }
+    setProyectos((prev) => [data, ...prev]);
+    setFormProyecto({ nombre: "", descripcion: "", cliente: "", fechaEntrega: "" });
+    setMostrarFormProyecto(false);
+    setProyectoAbierto(data.id);
+  };
+
+  const actualizarProyecto = async (id: string, patch: Partial<ProyectoDev>) => {
+    setProyectos((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    await fetch(`/api/admin/proyectos-dev/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+  };
+
+  const borrarProyecto = async (id: string) => {
+    if (!confirm("¿Borrar este proyecto y TODOS sus tickets? No se puede deshacer.")) return;
+    setProyectos((prev) => prev.filter((p) => p.id !== id));
+    setTickets((prev) => prev.filter((t) => t.proyectoId !== id));
+    if (proyectoAbierto === id) setProyectoAbierto(null);
+    await fetch(`/api/admin/proyectos-dev/${id}`, { method: "DELETE" });
+  };
+
+  const crearTicket = async () => {
+    if (!proyectoAbierto || !formTicket.titulo.trim()) return;
+    const res = await fetch("/api/admin/tickets-dev", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...formTicket, proyectoId: proyectoAbierto }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      setError(data.error);
+      return;
+    }
+    setTickets((prev) => [data, ...prev]);
+    setFormTicket({ titulo: "", descripcion: "", prioridad: "media" });
+    setMostrarFormTicket(false);
+  };
+
+  const actualizarTicket = async (id: string, patch: Partial<TicketDev>) => {
+    setTickets((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, ...patch, fechaHecho: patch.estado === "hecho" ? Date.now() : patch.estado ? null : t.fechaHecho } : t))
+    );
+    await fetch(`/api/admin/tickets-dev/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+  };
+
+  const borrarTicket = async (id: string) => {
+    if (!confirm("¿Borrar este ticket?")) return;
+    setTickets((prev) => prev.filter((t) => t.id !== id));
+    await fetch(`/api/admin/tickets-dev/${id}`, { method: "DELETE" });
+  };
+
+  function ticketsDe(proyectoId: string) {
+    return tickets.filter((t) => t.proyectoId === proyectoId);
+  }
+
+  function avance(proyectoId: string) {
+    const ts = ticketsDe(proyectoId);
+    if (ts.length === 0) return 0;
+    return Math.round((ts.filter((t) => t.estado === "hecho").length / ts.length) * 100);
+  }
+
+  const proyecto = proyectos.find((p) => p.id === proyectoAbierto);
+
+  if (loading) return <div className="text-slate-500 text-sm">Cargando...</div>;
+
+  // ── Vista de detalle de UN proyecto (sus tickets) ──
+  if (proyecto) {
+    const ts = ticketsDe(proyecto.id);
+    const pct = avance(proyecto.id);
+    const vencido = !!proyecto.fechaEntrega && proyecto.fechaEntrega < Date.now() && pct < 100;
+
+    return (
+      <div>
+        <button onClick={() => setProyectoAbierto(null)} className="text-slate-500 hover:text-white text-sm mb-4">
+          ← Todos los proyectos
+        </button>
+
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-5 mb-6">
+          <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
+            <div>
+              <h2 className="text-white font-bold text-lg">{proyecto.nombre}</h2>
+              {proyecto.cliente && <p className="text-slate-500 text-sm">Cliente: {proyecto.cliente}</p>}
+            </div>
+            <select
+              value={proyecto.estado}
+              onChange={(e) => actualizarProyecto(proyecto.id, { estado: e.target.value as EstadoProyectoDev })}
+              className={["text-xs font-bold px-3 py-1.5 rounded-full border-0", ESTADO_PROYECTO_CONFIG[proyecto.estado].color].join(" ")}
+            >
+              {Object.entries(ESTADO_PROYECTO_CONFIG).map(([k, v]) => (
+                <option key={k} value={k} className="bg-slate-900 text-white">
+                  {v.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {proyecto.descripcion && <p className="text-slate-400 text-sm mb-4">{proyecto.descripcion}</p>}
+
+          <div className="flex items-center gap-4 flex-wrap mb-2">
+            <div className={["text-sm font-semibold", vencido ? "text-red-400" : "text-slate-400"].join(" ")}>
+              📅 Entrega: {fmtFecha(proyecto.fechaEntrega)}
+              {vencido && " — vencida"}
+            </div>
+            <div className="text-sm text-slate-400">
+              {ts.filter((t) => t.estado === "hecho").length} / {ts.length} tickets hechos
+            </div>
+          </div>
+
+          <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+            <div
+              className={["h-full rounded-full transition-all", pct === 100 ? "bg-emerald-500" : "bg-cyan-500"].join(" ")}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <div className="text-right text-xs text-slate-500 mt-1">{pct}% de avance</div>
+        </div>
+
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-white font-bold">Tickets</h3>
+          <button
+            onClick={() => setMostrarFormTicket((v) => !v)}
+            className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm px-4 py-2 rounded-lg transition-colors"
+          >
+            {mostrarFormTicket ? "Cancelar" : "+ Nuevo ticket"}
+          </button>
+        </div>
+
+        {error && <div className="text-red-400 text-sm mb-3">{error}</div>}
+
+        {mostrarFormTicket && (
+          <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 mb-4 space-y-3">
+            <input
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm"
+              placeholder="Título del ticket"
+              value={formTicket.titulo}
+              onChange={(e) => setFormTicket({ ...formTicket, titulo: e.target.value })}
+            />
+            <textarea
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm"
+              placeholder="Descripción (opcional)"
+              rows={2}
+              value={formTicket.descripcion}
+              onChange={(e) => setFormTicket({ ...formTicket, descripcion: e.target.value })}
+            />
+            <div className="flex items-center gap-3">
+              <select
+                value={formTicket.prioridad}
+                onChange={(e) => setFormTicket({ ...formTicket, prioridad: e.target.value as PrioridadTicketDev })}
+                className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm"
+              >
+                {Object.entries(PRIORIDAD_TICKET_CONFIG).map(([k, v]) => (
+                  <option key={k} value={k}>
+                    Prioridad {v.label}
+                  </option>
+                ))}
+              </select>
+              <button onClick={crearTicket} className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm px-4 py-2 rounded-lg">
+                Crear ticket
+              </button>
+            </div>
+          </div>
+        )}
+
+        {ts.length === 0 && <div className="text-slate-500 text-sm">Todavía no hay tickets en este proyecto.</div>}
+
+        <div className="space-y-2">
+          {ts.map((t) => (
+            <div key={t.id} className="bg-slate-900/50 border border-slate-800 rounded-lg p-3.5 flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="text-white font-semibold text-sm">{t.titulo}</span>
+                  <span className={["text-[10px] font-bold uppercase", PRIORIDAD_TICKET_CONFIG[t.prioridad].color].join(" ")}>
+                    {PRIORIDAD_TICKET_CONFIG[t.prioridad].label}
+                  </span>
+                </div>
+                {t.descripcion && <p className="text-slate-500 text-xs mb-1">{t.descripcion}</p>}
+                {t.fechaHecho && <p className="text-emerald-500/70 text-[11px]">✓ Hecho el {fmtFecha(t.fechaHecho)}</p>}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <select
+                  value={t.estado}
+                  onChange={(e) => actualizarTicket(t.id, { estado: e.target.value as EstadoTicketDev })}
+                  className={["text-xs font-bold px-2.5 py-1 rounded-full border-0", ESTADO_TICKET_CONFIG[t.estado].color].join(" ")}
+                >
+                  {Object.entries(ESTADO_TICKET_CONFIG).map(([k, v]) => (
+                    <option key={k} value={k} className="bg-slate-900 text-white">
+                      {v.label}
+                    </option>
+                  ))}
+                </select>
+                <button onClick={() => borrarTicket(t.id)} className="text-slate-600 hover:text-red-400 text-xs px-2">
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Vista de lista de proyectos ──
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h2 className="text-white font-bold text-lg">🛠️ Proyectos & Tickets</h2>
+          <p className="text-slate-500 text-sm">Seguimiento de desarrollo -- tickets por proyecto, avance y fecha de entrega.</p>
+        </div>
+        <button
+          onClick={() => setMostrarFormProyecto((v) => !v)}
+          className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm px-4 py-2 rounded-lg transition-colors"
+        >
+          {mostrarFormProyecto ? "Cancelar" : "+ Nuevo proyecto"}
+        </button>
+      </div>
+
+      {error && <div className="text-red-400 text-sm mb-3">{error}</div>}
+
+      {mostrarFormProyecto && (
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-5 mb-6 space-y-3">
+          <div className="grid md:grid-cols-2 gap-3">
+            <input
+              className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm"
+              placeholder="Nombre del proyecto *"
+              value={formProyecto.nombre}
+              onChange={(e) => setFormProyecto({ ...formProyecto, nombre: e.target.value })}
+            />
+            <input
+              className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm"
+              placeholder="Cliente (opcional)"
+              value={formProyecto.cliente}
+              onChange={(e) => setFormProyecto({ ...formProyecto, cliente: e.target.value })}
+            />
+          </div>
+          <textarea
+            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm"
+            placeholder="Descripción"
+            rows={2}
+            value={formProyecto.descripcion}
+            onChange={(e) => setFormProyecto({ ...formProyecto, descripcion: e.target.value })}
+          />
+          <div>
+            <label className="block text-[10px] font-mono text-slate-500 uppercase mb-1">Fecha de entrega</label>
+            <input
+              type="date"
+              className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm"
+              value={formProyecto.fechaEntrega}
+              onChange={(e) => setFormProyecto({ ...formProyecto, fechaEntrega: e.target.value })}
+            />
+          </div>
+          <button onClick={crearProyecto} className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm px-4 py-2 rounded-lg">
+            Crear proyecto
+          </button>
+        </div>
+      )}
+
+      {proyectos.length === 0 && <div className="text-slate-500 text-sm">Todavía no creaste ningún proyecto.</div>}
+
+      <div className="grid md:grid-cols-2 gap-4">
+        {proyectos.map((p) => {
+          const ts = ticketsDe(p.id);
+          const pct = avance(p.id);
+          const vencido = !!p.fechaEntrega && p.fechaEntrega < Date.now() && pct < 100;
+          return (
+            <div
+              key={p.id}
+              onClick={() => setProyectoAbierto(p.id)}
+              className="bg-slate-900/50 border border-slate-800 hover:border-cyan-500/40 rounded-xl p-4 cursor-pointer transition-colors"
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span className="text-white font-bold">{p.nombre}</span>
+                <span className={["text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0", ESTADO_PROYECTO_CONFIG[p.estado].color].join(" ")}>
+                  {ESTADO_PROYECTO_CONFIG[p.estado].label}
+                </span>
+              </div>
+              {p.cliente && <p className="text-slate-500 text-xs mb-2">Cliente: {p.cliente}</p>}
+              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden mb-1.5">
+                <div className={["h-full rounded-full", pct === 100 ? "bg-emerald-500" : "bg-cyan-500"].join(" ")} style={{ width: `${pct}%` }} />
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500">
+                  {pct}% -- {ts.filter((t) => t.estado === "hecho").length}/{ts.length} tickets
+                </span>
+                <span className={vencido ? "text-red-400 font-semibold" : "text-slate-500"}>
+                  📅 {fmtFecha(p.fechaEntrega)}
+                  {vencido && " ⚠️"}
+                </span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  borrarProyecto(p.id);
+                }}
+                className="text-slate-600 hover:text-red-400 text-[11px] mt-2"
+              >
+                Borrar proyecto
+              </button>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

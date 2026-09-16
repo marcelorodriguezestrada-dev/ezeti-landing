@@ -59,4 +59,12 @@ export function getSettingsDoc() {
   return getDb().collection("settings").doc("general");
 }
 
+export function getProyectosCol() {
+  return getDb().collection("proyectosDev");
+}
+
+export function getTicketsCol() {
+  return getDb().collection("ticketsDev");
+}
+
 export { admin };

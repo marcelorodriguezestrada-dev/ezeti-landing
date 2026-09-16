@@ -163,3 +163,33 @@ export interface Campaign {
   createdAt: number;
   publishedAt: number | null;
 }
+
+export type EstadoProyectoDev = "activo" | "pausado" | "finalizado";
+
+export interface ProyectoDev {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  cliente: string; // vacío si es un proyecto interno, sin cliente
+  fechaEntrega: number | null; // timestamp -- fecha comprometida de entrega
+  estado: EstadoProyectoDev;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export type EstadoTicketDev = "pendiente" | "en_progreso" | "bloqueado" | "hecho";
+export type PrioridadTicketDev = "baja" | "media" | "alta";
+
+export interface TicketDev {
+  id: string;
+  proyectoId: string;
+  titulo: string;
+  descripcion: string;
+  estado: EstadoTicketDev;
+  prioridad: PrioridadTicketDev;
+  createdAt: number;
+  updatedAt: number;
+  // Se completa solo cuando el estado pasa a "hecho" -- es la fecha que
+  // se usa para el reporte de avance (no la fecha de creación).
+  fechaHecho: number | null;
+}
