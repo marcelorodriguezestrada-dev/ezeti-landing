@@ -192,4 +192,7 @@ export interface TicketDev {
   // Se completa solo cuando el estado pasa a "hecho" -- es la fecha que
   // se usa para el reporte de avance (no la fecha de creación).
   fechaHecho: number | null;
+  // Quién lo pidió, cuando el ticket se cargó desde la página pública
+  // (no desde el panel de admin) -- vacío si lo cargaste vos mismo.
+  solicitadoPor?: string;
 }

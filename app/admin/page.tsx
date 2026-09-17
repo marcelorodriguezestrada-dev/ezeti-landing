@@ -2569,6 +2569,9 @@ function ProyectosDevTab() {
   const [mostrarFormIA, setMostrarFormIA] = useState(false);
   const [notasReunion, setNotasReunion] = useState("");
   const [organizandoIA, setOrganizandoIA] = useState(false);
+  const [linkCopiado, setLinkCopiado] = useState(false);
+  const [ticketEditando, setTicketEditando] = useState<string | null>(null);
+  const [formEdicion, setFormEdicion] = useState({ titulo: "", descripcion: "", prioridad: "media" as PrioridadTicketDev });
   const [error, setError] = useState("");
 
   const [formProyecto, setFormProyecto] = useState({ nombre: "", descripcion: "", cliente: "", fechaEntrega: "" });
@@ -2665,6 +2668,17 @@ function ProyectosDevTab() {
     await fetch(`/api/admin/tickets-dev/${id}`, { method: "DELETE" });
   };
 
+  const empezarEdicion = (t: TicketDev) => {
+    setTicketEditando(t.id);
+    setFormEdicion({ titulo: t.titulo, descripcion: t.descripcion, prioridad: t.prioridad });
+  };
+
+  const guardarEdicion = async (id: string) => {
+    if (!formEdicion.titulo.trim()) return;
+    await actualizarTicket(id, formEdicion);
+    setTicketEditando(null);
+  };
+
   // Convierte texto en bruto (notas pegadas de una reunión) en varios
   // tickets de una -- la IA separa cada idea/punto distinto en su
   // propia tarea, con título accionable y prioridad sugerida.
@@ -2722,17 +2736,30 @@ function ProyectosDevTab() {
               <h2 className="text-white font-bold text-lg">{proyecto.nombre}</h2>
               {proyecto.cliente && <p className="text-slate-500 text-sm">Cliente: {proyecto.cliente}</p>}
             </div>
-            <select
-              value={proyecto.estado}
-              onChange={(e) => actualizarProyecto(proyecto.id, { estado: e.target.value as EstadoProyectoDev })}
-              className={["text-xs font-bold px-3 py-1.5 rounded-full border-0", ESTADO_PROYECTO_CONFIG[proyecto.estado].color].join(" ")}
-            >
-              {Object.entries(ESTADO_PROYECTO_CONFIG).map(([k, v]) => (
-                <option key={k} value={k} className="bg-slate-900 text-white">
-                  {v.label}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const url = `${window.location.origin}/proyecto/${proyecto.id}`;
+                  navigator.clipboard.writeText(url);
+                  setLinkCopiado(true);
+                  setTimeout(() => setLinkCopiado(false), 2000);
+                }}
+                className="text-xs font-bold px-3 py-1.5 rounded-full border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
+              >
+                {linkCopiado ? "✓ Link copiado" : "🔗 Compartir"}
+              </button>
+              <select
+                value={proyecto.estado}
+                onChange={(e) => actualizarProyecto(proyecto.id, { estado: e.target.value as EstadoProyectoDev })}
+                className={["text-xs font-bold px-3 py-1.5 rounded-full border-0", ESTADO_PROYECTO_CONFIG[proyecto.estado].color].join(" ")}
+              >
+                {Object.entries(ESTADO_PROYECTO_CONFIG).map(([k, v]) => (
+                  <option key={k} value={k} className="bg-slate-900 text-white">
+                    {v.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {proyecto.descripcion && <p className="text-slate-400 text-sm mb-4">{proyecto.descripcion}</p>}
@@ -2836,47 +2863,88 @@ function ProyectosDevTab() {
         {ts.length === 0 && <div className="text-slate-500 text-sm">Todavía no hay tickets en este proyecto.</div>}
 
         <div className="space-y-2">
-          {ts.map((t) => (
-            <div key={t.id} className="bg-slate-900/50 border border-slate-800 rounded-lg p-3.5 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3 flex-1 min-w-0">
+          {ts.map((t) =>
+            ticketEditando === t.id ? (
+              <div key={t.id} className="bg-slate-900/50 border border-cyan-500/40 rounded-lg p-3.5 space-y-2">
                 <input
-                  type="checkbox"
-                  checked={t.estado === "hecho"}
-                  onChange={(e) => actualizarTicket(t.id, { estado: e.target.checked ? "hecho" : "pendiente" })}
-                  className="mt-1 w-4 h-4 shrink-0 accent-emerald-500 cursor-pointer"
-                  title="Marcar como hecho"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm"
+                  value={formEdicion.titulo}
+                  onChange={(e) => setFormEdicion({ ...formEdicion, titulo: e.target.value })}
                 />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className={["font-semibold text-sm", t.estado === "hecho" ? "text-slate-500 line-through" : "text-white"].join(" ")}>
-                      {t.titulo}
-                    </span>
-                    <span className={["text-[10px] font-bold uppercase", PRIORIDAD_TICKET_CONFIG[t.prioridad].color].join(" ")}>
-                      {PRIORIDAD_TICKET_CONFIG[t.prioridad].label}
-                    </span>
-                  </div>
-                  {t.descripcion && <p className="text-slate-500 text-xs mb-1">{t.descripcion}</p>}
-                  {t.fechaHecho && <p className="text-emerald-500/70 text-[11px]">✓ Hecho el {fmtFecha(t.fechaHecho)}</p>}
+                <textarea
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm"
+                  rows={2}
+                  value={formEdicion.descripcion}
+                  onChange={(e) => setFormEdicion({ ...formEdicion, descripcion: e.target.value })}
+                />
+                <div className="flex items-center gap-2">
+                  <select
+                    value={formEdicion.prioridad}
+                    onChange={(e) => setFormEdicion({ ...formEdicion, prioridad: e.target.value as PrioridadTicketDev })}
+                    className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white text-xs"
+                  >
+                    {Object.entries(PRIORIDAD_TICKET_CONFIG).map(([k, v]) => (
+                      <option key={k} value={k}>
+                        Prioridad {v.label}
+                      </option>
+                    ))}
+                  </select>
+                  <button onClick={() => guardarEdicion(t.id)} className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg">
+                    Guardar
+                  </button>
+                  <button onClick={() => setTicketEditando(null)} className="text-slate-500 hover:text-white text-xs px-2">
+                    Cancelar
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <select
-                  value={t.estado}
-                  onChange={(e) => actualizarTicket(t.id, { estado: e.target.value as EstadoTicketDev })}
-                  className={["text-xs font-bold px-2.5 py-1 rounded-full border-0", ESTADO_TICKET_CONFIG[t.estado].color].join(" ")}
-                >
-                  {Object.entries(ESTADO_TICKET_CONFIG).map(([k, v]) => (
-                    <option key={k} value={k} className="bg-slate-900 text-white">
-                      {v.label}
-                    </option>
-                  ))}
-                </select>
-                <button onClick={() => borrarTicket(t.id)} className="text-slate-600 hover:text-red-400 text-xs px-2">
-                  ✕
-                </button>
+            ) : (
+              <div key={t.id} className="bg-slate-900/50 border border-slate-800 rounded-lg p-3.5 flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <input
+                    type="checkbox"
+                    checked={t.estado === "hecho"}
+                    onChange={(e) => actualizarTicket(t.id, { estado: e.target.checked ? "hecho" : "pendiente" })}
+                    className="mt-1 w-4 h-4 shrink-0 accent-emerald-500 cursor-pointer"
+                    title="Marcar como hecho"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className={["font-semibold text-sm", t.estado === "hecho" ? "text-slate-500 line-through" : "text-white"].join(" ")}>
+                        {t.titulo}
+                      </span>
+                      <span className={["text-[10px] font-bold uppercase", PRIORIDAD_TICKET_CONFIG[t.prioridad].color].join(" ")}>
+                        {PRIORIDAD_TICKET_CONFIG[t.prioridad].label}
+                      </span>
+                      {t.solicitadoPor && (
+                        <span className="text-[10px] text-slate-500 italic">pedido por {t.solicitadoPor}</span>
+                      )}
+                    </div>
+                    {t.descripcion && <p className="text-slate-500 text-xs mb-1">{t.descripcion}</p>}
+                    {t.fechaHecho && <p className="text-emerald-500/70 text-[11px]">✓ Hecho el {fmtFecha(t.fechaHecho)}</p>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <select
+                    value={t.estado}
+                    onChange={(e) => actualizarTicket(t.id, { estado: e.target.value as EstadoTicketDev })}
+                    className={["text-xs font-bold px-2.5 py-1 rounded-full border-0", ESTADO_TICKET_CONFIG[t.estado].color].join(" ")}
+                  >
+                    {Object.entries(ESTADO_TICKET_CONFIG).map(([k, v]) => (
+                      <option key={k} value={k} className="bg-slate-900 text-white">
+                        {v.label}
+                      </option>
+                    ))}
+                  </select>
+                  <button onClick={() => empezarEdicion(t)} className="text-slate-600 hover:text-cyan-400 text-xs px-1.5">
+                    ✎
+                  </button>
+                  <button onClick={() => borrarTicket(t.id)} className="text-slate-600 hover:text-red-400 text-xs px-2">
+                    ✕
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
       </div>
     );
