@@ -2541,12 +2541,11 @@ const ESTADO_PROYECTO_CONFIG: Record<EstadoProyectoDev, { label: string; color: 
   finalizado: { label: "Finalizado", color: "bg-emerald-500/20 text-emerald-400" },
 };
 
-const ESTADO_TICKET_CONFIG: Record<EstadoTicketDev, { label: string; color: string }> = {
-  pendiente: { label: "Pendiente", color: "bg-slate-700 text-slate-300" },
-  en_progreso: { label: "En progreso", color: "bg-cyan-500/20 text-cyan-400" },
-  bloqueado: { label: "Bloqueado", color: "bg-red-500/20 text-red-400" },
-  hecho: { label: "Hecho", color: "bg-emerald-500/20 text-emerald-400" },
-};
+const COLUMNAS_KANBAN: { id: EstadoTicketDev; label: string; color: string }[] = [
+  { id: "backlog", label: "Backlog", color: "border-slate-600" },
+  { id: "para_hacer", label: "Para hacer", color: "border-cyan-500" },
+  { id: "hecho", label: "Hecho", color: "border-emerald-500" },
+];
 
 const PRIORIDAD_TICKET_CONFIG: Record<PrioridadTicketDev, { label: string; color: string }> = {
   baja: { label: "Baja", color: "text-slate-500" },
@@ -2570,8 +2569,8 @@ function ProyectosDevTab() {
   const [notasReunion, setNotasReunion] = useState("");
   const [organizandoIA, setOrganizandoIA] = useState(false);
   const [linkCopiado, setLinkCopiado] = useState(false);
-  const [ticketEditando, setTicketEditando] = useState<string | null>(null);
-  const [formEdicion, setFormEdicion] = useState({ titulo: "", descripcion: "", prioridad: "media" as PrioridadTicketDev });
+  const [ticketAbierto, setTicketAbierto] = useState<string | null>(null);
+  const [arrastrando, setArrastrando] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   const [formProyecto, setFormProyecto] = useState({ nombre: "", descripcion: "", cliente: "", fechaEntrega: "" });
@@ -2666,17 +2665,6 @@ function ProyectosDevTab() {
     if (!confirm("¿Borrar este ticket?")) return;
     setTickets((prev) => prev.filter((t) => t.id !== id));
     await fetch(`/api/admin/tickets-dev/${id}`, { method: "DELETE" });
-  };
-
-  const empezarEdicion = (t: TicketDev) => {
-    setTicketEditando(t.id);
-    setFormEdicion({ titulo: t.titulo, descripcion: t.descripcion, prioridad: t.prioridad });
-  };
-
-  const guardarEdicion = async (id: string) => {
-    if (!formEdicion.titulo.trim()) return;
-    await actualizarTicket(id, formEdicion);
-    setTicketEditando(null);
   };
 
   // Convierte texto en bruto (notas pegadas de una reunión) en varios
@@ -2862,90 +2850,73 @@ function ProyectosDevTab() {
 
         {ts.length === 0 && <div className="text-slate-500 text-sm">Todavía no hay tickets en este proyecto.</div>}
 
-        <div className="space-y-2">
-          {ts.map((t) =>
-            ticketEditando === t.id ? (
-              <div key={t.id} className="bg-slate-900/50 border border-cyan-500/40 rounded-lg p-3.5 space-y-2">
-                <input
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm"
-                  value={formEdicion.titulo}
-                  onChange={(e) => setFormEdicion({ ...formEdicion, titulo: e.target.value })}
-                />
-                <textarea
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm"
-                  rows={2}
-                  value={formEdicion.descripcion}
-                  onChange={(e) => setFormEdicion({ ...formEdicion, descripcion: e.target.value })}
-                />
-                <div className="flex items-center gap-2">
-                  <select
-                    value={formEdicion.prioridad}
-                    onChange={(e) => setFormEdicion({ ...formEdicion, prioridad: e.target.value as PrioridadTicketDev })}
-                    className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-white text-xs"
-                  >
-                    {Object.entries(PRIORIDAD_TICKET_CONFIG).map(([k, v]) => (
-                      <option key={k} value={k}>
-                        Prioridad {v.label}
-                      </option>
-                    ))}
-                  </select>
-                  <button onClick={() => guardarEdicion(t.id)} className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg">
-                    Guardar
-                  </button>
-                  <button onClick={() => setTicketEditando(null)} className="text-slate-500 hover:text-white text-xs px-2">
-                    Cancelar
-                  </button>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {COLUMNAS_KANBAN.map((col) => {
+            const ticketsCol = ts.filter((t) => t.estado === col.id);
+            return (
+              <div
+                key={col.id}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => {
+                  if (!arrastrando) return;
+                  actualizarTicket(arrastrando, { estado: col.id });
+                  setArrastrando(null);
+                }}
+                className={["bg-slate-900/30 border-t-4 rounded-xl p-3 min-h-[140px]", col.color].join(" ")}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-white font-bold text-sm">{col.label}</span>
+                  <span className="text-slate-500 text-xs">{ticketsCol.length}</span>
                 </div>
-              </div>
-            ) : (
-              <div key={t.id} className="bg-slate-900/50 border border-slate-800 rounded-lg p-3.5 flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <input
-                    type="checkbox"
-                    checked={t.estado === "hecho"}
-                    onChange={(e) => actualizarTicket(t.id, { estado: e.target.checked ? "hecho" : "pendiente" })}
-                    className="mt-1 w-4 h-4 shrink-0 accent-emerald-500 cursor-pointer"
-                    title="Marcar como hecho"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className={["font-semibold text-sm", t.estado === "hecho" ? "text-slate-500 line-through" : "text-white"].join(" ")}>
+                <div className="space-y-2">
+                  {ticketsCol.map((t) => (
+                    <div
+                      key={t.id}
+                      draggable
+                      onDragStart={() => setArrastrando(t.id)}
+                      onDragEnd={() => setArrastrando(null)}
+                      onClick={() => setTicketAbierto(t.id)}
+                      className={[
+                        "bg-slate-900 border rounded-lg p-3 cursor-pointer transition-colors",
+                        arrastrando === t.id ? "border-cyan-500 opacity-50" : "border-slate-800 hover:border-cyan-500/40",
+                      ].join(" ")}
+                    >
+                      <span className={["text-sm font-semibold block mb-1.5", t.estado === "hecho" ? "text-slate-500 line-through" : "text-white"].join(" ")}>
                         {t.titulo}
                       </span>
-                      <span className={["text-[10px] font-bold uppercase", PRIORIDAD_TICKET_CONFIG[t.prioridad].color].join(" ")}>
-                        {PRIORIDAD_TICKET_CONFIG[t.prioridad].label}
-                      </span>
-                      {t.solicitadoPor && (
-                        <span className="text-[10px] text-slate-500 italic">pedido por {t.solicitadoPor}</span>
-                      )}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={["text-[10px] font-bold uppercase", PRIORIDAD_TICKET_CONFIG[t.prioridad].color].join(" ")}>
+                          {PRIORIDAD_TICKET_CONFIG[t.prioridad].label}
+                        </span>
+                        {t.subtareas.length > 0 && (
+                          <span className="text-[10px] text-slate-500">
+                            ☑ {t.subtareas.filter((s) => s.hecha).length}/{t.subtareas.length}
+                          </span>
+                        )}
+                        {t.adjuntos.length > 0 && <span className="text-[10px] text-slate-500">📎 {t.adjuntos.length}</span>}
+                        {t.notas.length > 0 && <span className="text-[10px] text-slate-500">📝 {t.notas.length}</span>}
+                      </div>
+                      {t.solicitadoPor && <div className="text-[10px] text-slate-600 italic mt-1">pedido por {t.solicitadoPor}</div>}
                     </div>
-                    {t.descripcion && <p className="text-slate-500 text-xs mb-1">{t.descripcion}</p>}
-                    {t.fechaHecho && <p className="text-emerald-500/70 text-[11px]">✓ Hecho el {fmtFecha(t.fechaHecho)}</p>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <select
-                    value={t.estado}
-                    onChange={(e) => actualizarTicket(t.id, { estado: e.target.value as EstadoTicketDev })}
-                    className={["text-xs font-bold px-2.5 py-1 rounded-full border-0", ESTADO_TICKET_CONFIG[t.estado].color].join(" ")}
-                  >
-                    {Object.entries(ESTADO_TICKET_CONFIG).map(([k, v]) => (
-                      <option key={k} value={k} className="bg-slate-900 text-white">
-                        {v.label}
-                      </option>
-                    ))}
-                  </select>
-                  <button onClick={() => empezarEdicion(t)} className="text-slate-600 hover:text-cyan-400 text-xs px-1.5">
-                    ✎
-                  </button>
-                  <button onClick={() => borrarTicket(t.id)} className="text-slate-600 hover:text-red-400 text-xs px-2">
-                    ✕
-                  </button>
+                  ))}
+                  {ticketsCol.length === 0 && <div className="text-slate-600 text-xs text-center py-4">Arrastrá un ticket acá</div>}
                 </div>
               </div>
-            )
-          )}
+            );
+          })}
         </div>
+
+        {ticketAbierto && tickets.find((t) => t.id === ticketAbierto) && (
+          <TicketModalDev
+            ticket={tickets.find((t) => t.id === ticketAbierto) as TicketDev}
+            onClose={() => setTicketAbierto(null)}
+            onUpdate={actualizarTicket}
+            onDelete={(id) => {
+              borrarTicket(id);
+              setTicketAbierto(null);
+            }}
+          />
+        )}
       </div>
     );
   }
@@ -3050,6 +3021,225 @@ function ProyectosDevTab() {
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+function TicketModalDev({
+  ticket,
+  onClose,
+  onUpdate,
+  onDelete,
+}: {
+  ticket: TicketDev;
+  onClose: () => void;
+  onUpdate: (id: string, patch: Partial<TicketDev>) => Promise<void>;
+  onDelete: (id: string) => void;
+}) {
+  const [titulo, setTitulo] = useState(ticket.titulo);
+  const [descripcion, setDescripcion] = useState(ticket.descripcion);
+  const [nuevaSubtarea, setNuevaSubtarea] = useState("");
+  const [nuevaNota, setNuevaNota] = useState("");
+  const [subiendo, setSubiendo] = useState(false);
+  const [error, setError] = useState("");
+
+  const guardarCampos = () => {
+    if (titulo.trim() && (titulo !== ticket.titulo || descripcion !== ticket.descripcion)) {
+      onUpdate(ticket.id, { titulo, descripcion });
+    }
+  };
+
+  const agregarSubtarea = () => {
+    if (!nuevaSubtarea.trim()) return;
+    onUpdate(ticket.id, { subtareas: [...ticket.subtareas, { id: crypto.randomUUID(), texto: nuevaSubtarea, hecha: false }] });
+    setNuevaSubtarea("");
+  };
+
+  const toggleSubtarea = (id: string) => {
+    onUpdate(ticket.id, { subtareas: ticket.subtareas.map((s) => (s.id === id ? { ...s, hecha: !s.hecha } : s)) });
+  };
+
+  const borrarSubtarea = (id: string) => {
+    onUpdate(ticket.id, { subtareas: ticket.subtareas.filter((s) => s.id !== id) });
+  };
+
+  const agregarNota = () => {
+    if (!nuevaNota.trim()) return;
+    onUpdate(ticket.id, { notas: [{ id: crypto.randomUUID(), texto: nuevaNota, createdAt: Date.now() }, ...ticket.notas] });
+    setNuevaNota("");
+  };
+
+  const subirAdjunto = async (file: File | null) => {
+    if (!file) return;
+    setSubiendo(true);
+    setError("");
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch(`/api/admin/tickets-dev/${ticket.id}/adjuntos`, { method: "POST", body: form });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      onUpdate(ticket.id, { adjuntos: data.adjuntos });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSubiendo(false);
+    }
+  };
+
+  const borrarAdjunto = (id: string) => {
+    onUpdate(ticket.id, { adjuntos: ticket.adjuntos.filter((a) => a.id !== id) });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50" onClick={onClose}>
+      <div
+        className="bg-slate-950 border border-slate-800 rounded-2xl p-6 max-w-lg w-full max-h-[85vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <input
+            value={titulo}
+            onChange={(e) => setTitulo(e.target.value)}
+            onBlur={guardarCampos}
+            className="bg-transparent text-white font-bold text-lg flex-1 outline-none border-b border-transparent focus:border-slate-700 pb-1"
+          />
+          <button onClick={onClose} className="text-slate-500 hover:text-white text-2xl leading-none">
+            ×
+          </button>
+        </div>
+
+        <textarea
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+          onBlur={guardarCampos}
+          placeholder="Descripción..."
+          rows={2}
+          className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm mb-3"
+        />
+
+        <div className="flex items-center gap-2 mb-5">
+          <select
+            value={ticket.prioridad}
+            onChange={(e) => onUpdate(ticket.id, { prioridad: e.target.value as PrioridadTicketDev })}
+            className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-white text-xs"
+          >
+            {Object.entries(PRIORIDAD_TICKET_CONFIG).map(([k, v]) => (
+              <option key={k} value={k}>
+                Prioridad {v.label}
+              </option>
+            ))}
+          </select>
+          <select
+            value={ticket.estado}
+            onChange={(e) => onUpdate(ticket.id, { estado: e.target.value as EstadoTicketDev })}
+            className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-white text-xs"
+          >
+            {COLUMNAS_KANBAN.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Subtareas */}
+        <div className="mb-5">
+          <div className="text-slate-400 text-xs font-bold uppercase mb-2">
+            Subtareas {ticket.subtareas.length > 0 && `(${ticket.subtareas.filter((s) => s.hecha).length}/${ticket.subtareas.length})`}
+          </div>
+          <div className="space-y-1.5 mb-2">
+            {ticket.subtareas.map((s) => (
+              <div key={s.id} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={s.hecha}
+                  onChange={() => toggleSubtarea(s.id)}
+                  className="w-3.5 h-3.5 accent-emerald-500 cursor-pointer shrink-0"
+                />
+                <span className={["text-sm flex-1", s.hecha ? "text-slate-500 line-through" : "text-slate-200"].join(" ")}>{s.texto}</span>
+                <button onClick={() => borrarSubtarea(s.id)} className="text-slate-600 hover:text-red-400 text-xs shrink-0">
+                  ✕
+                </button>
+              </div>
+            ))}
+            {ticket.subtareas.length === 0 && <div className="text-slate-600 text-xs">Sin subtareas todavía.</div>}
+          </div>
+          <div className="flex gap-2">
+            <input
+              value={nuevaSubtarea}
+              onChange={(e) => setNuevaSubtarea(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && agregarSubtarea()}
+              placeholder="Agregar subtarea..."
+              className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-white text-xs"
+            />
+            <button onClick={agregarSubtarea} className="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-lg">
+              +
+            </button>
+          </div>
+        </div>
+
+        {/* Adjuntos -- solo imágenes, ver nota en la ruta de la API */}
+        <div className="mb-5">
+          <div className="text-slate-400 text-xs font-bold uppercase mb-2">Adjuntos (imágenes)</div>
+          {error && <div className="text-red-400 text-xs mb-2">{error}</div>}
+          {ticket.adjuntos.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {ticket.adjuntos.map((a) => (
+                <div key={a.id} className="relative">
+                  <a href={a.url} target="_blank" rel="noreferrer">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={a.url} alt={a.nombre} className="w-16 h-16 object-cover rounded-lg border border-slate-800" />
+                  </a>
+                  <button
+                    onClick={() => borrarAdjunto(a.id)}
+                    className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-400 text-white rounded-full w-4 h-4 text-[10px] leading-none flex items-center justify-center"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            disabled={subiendo}
+            onChange={(e) => subirAdjunto(e.target.files?.[0] || null)}
+            className="text-slate-400 text-xs"
+          />
+          {subiendo && <div className="text-slate-500 text-xs mt-1">Subiendo...</div>}
+        </div>
+
+        {/* Notas */}
+        <div className="mb-4">
+          <div className="text-slate-400 text-xs font-bold uppercase mb-2">Notas</div>
+          <div className="space-y-2 mb-2 max-h-40 overflow-y-auto">
+            {ticket.notas.map((n) => (
+              <div key={n.id} className="bg-slate-900 border border-slate-800 rounded-lg p-2.5">
+                <p className="text-slate-200 text-xs whitespace-pre-wrap">{n.texto}</p>
+                <p className="text-slate-600 text-[10px] mt-1">{new Date(n.createdAt).toLocaleString("es-BO")}</p>
+              </div>
+            ))}
+            {ticket.notas.length === 0 && <div className="text-slate-600 text-xs">Sin notas todavía.</div>}
+          </div>
+          <div className="flex gap-2">
+            <input
+              value={nuevaNota}
+              onChange={(e) => setNuevaNota(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && agregarNota()}
+              placeholder="Escribir una nota..."
+              className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-white text-xs"
+            />
+            <button onClick={agregarNota} className="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-lg">
+              +
+            </button>
+          </div>
+        </div>
+
+        <button onClick={() => onDelete(ticket.id)} className="text-red-500/70 hover:text-red-400 text-xs">
+          Borrar este ticket
+        </button>
       </div>
     </div>
   );

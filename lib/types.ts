@@ -177,8 +177,27 @@ export interface ProyectoDev {
   updatedAt: number;
 }
 
-export type EstadoTicketDev = "pendiente" | "en_progreso" | "bloqueado" | "hecho";
+export type EstadoTicketDev = "backlog" | "para_hacer" | "hecho";
 export type PrioridadTicketDev = "baja" | "media" | "alta";
+
+export interface SubtareaTicket {
+  id: string;
+  texto: string;
+  hecha: boolean;
+}
+
+export interface AdjuntoTicket {
+  id: string;
+  url: string;
+  nombre: string;
+  createdAt: number;
+}
+
+export interface NotaTicket {
+  id: string;
+  texto: string;
+  createdAt: number;
+}
 
 export interface TicketDev {
   id: string;
@@ -195,4 +214,7 @@ export interface TicketDev {
   // Quién lo pidió, cuando el ticket se cargó desde la página pública
   // (no desde el panel de admin) -- vacío si lo cargaste vos mismo.
   solicitadoPor?: string;
+  subtareas: SubtareaTicket[];
+  adjuntos: AdjuntoTicket[];
+  notas: NotaTicket[];
 }

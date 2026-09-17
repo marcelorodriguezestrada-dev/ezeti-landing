@@ -24,11 +24,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       // Se guarda quién lo pidió, si lo puso -- ayuda a saber de dónde
       // salió un ticket cargado desde afuera del panel de admin.
       solicitadoPor: body.solicitadoPor || "",
-      estado: "pendiente" as const,
+      estado: "backlog" as const,
       prioridad: "media" as const,
       createdAt: now,
       updatedAt: now,
       fechaHecho: null,
+      subtareas: [],
+      adjuntos: [],
+      notas: [],
     };
     const doc = await getTicketsCol().add(ticket);
     return NextResponse.json({ id: doc.id, ...ticket });

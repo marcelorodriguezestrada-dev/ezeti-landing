@@ -44,11 +44,14 @@ export async function POST(req: NextRequest) {
         proyectoId,
         titulo: t.titulo,
         descripcion: t.descripcion || "",
-        estado: "pendiente" as const,
+        estado: "backlog" as const,
         prioridad,
         createdAt: now,
         updatedAt: now,
         fechaHecho: null,
+        subtareas: [],
+        adjuntos: [],
+        notas: [],
       };
       const ref = col.doc();
       batch.set(ref, ticket);

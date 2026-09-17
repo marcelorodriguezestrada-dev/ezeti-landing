@@ -30,11 +30,14 @@ export async function POST(req: NextRequest) {
       proyectoId: body.proyectoId,
       titulo: body.titulo,
       descripcion: body.descripcion || "",
-      estado: "pendiente" as const,
+      estado: "backlog" as const,
       prioridad: body.prioridad || "media",
       createdAt: now,
       updatedAt: now,
       fechaHecho: null,
+      subtareas: [],
+      adjuntos: [],
+      notas: [],
     };
     const doc = await getTicketsCol().add(ticket);
     return NextResponse.json({ id: doc.id, ...ticket });

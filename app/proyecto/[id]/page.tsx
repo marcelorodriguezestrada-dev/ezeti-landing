@@ -4,9 +4,8 @@ import { useParams } from "next/navigation";
 import type { ProyectoDev, TicketDev, EstadoTicketDev } from "@/lib/types";
 
 const ESTADO_LABEL: Record<EstadoTicketDev, { label: string; color: string }> = {
-  pendiente: { label: "Pendiente", color: "bg-slate-100 text-slate-600" },
-  en_progreso: { label: "En progreso", color: "bg-cyan-100 text-cyan-700" },
-  bloqueado: { label: "Bloqueado", color: "bg-red-100 text-red-700" },
+  backlog: { label: "Backlog", color: "bg-slate-100 text-slate-600" },
+  para_hacer: { label: "Para hacer", color: "bg-cyan-100 text-cyan-700" },
   hecho: { label: "Hecho", color: "bg-emerald-100 text-emerald-700" },
 };
 
