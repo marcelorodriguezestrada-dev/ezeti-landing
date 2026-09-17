@@ -2581,7 +2581,11 @@ function ProyectosDevTab() {
     try {
       const [pRes, tRes] = await Promise.all([fetch("/api/admin/proyectos-dev"), fetch("/api/admin/tickets-dev")]);
       setProyectos(await pRes.json());
-      setTickets(await tRes.json());
+      const ticketsCrudos: TicketDev[] = await tRes.json();
+      // Los tickets creados ANTES de que existieran subtareas/adjuntos/notas
+      // no tienen esos campos guardados en Firestore (quedan undefined) --
+      // sin esto, cualquier .length sobre ellos rompe toda la pantalla.
+      setTickets(ticketsCrudos.map((t) => ({ ...t, subtareas: t.subtareas || [], adjuntos: t.adjuntos || [], notas: t.notas || [] })));
     } finally {
       setLoading(false);
     }
