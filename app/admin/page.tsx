@@ -2566,6 +2566,9 @@ function ProyectosDevTab() {
   const [proyectoAbierto, setProyectoAbierto] = useState<string | null>(null);
   const [mostrarFormProyecto, setMostrarFormProyecto] = useState(false);
   const [mostrarFormTicket, setMostrarFormTicket] = useState(false);
+  const [mostrarFormIA, setMostrarFormIA] = useState(false);
+  const [notasReunion, setNotasReunion] = useState("");
+  const [organizandoIA, setOrganizandoIA] = useState(false);
   const [error, setError] = useState("");
 
   const [formProyecto, setFormProyecto] = useState({ nombre: "", descripcion: "", cliente: "", fechaEntrega: "" });
@@ -2662,6 +2665,31 @@ function ProyectosDevTab() {
     await fetch(`/api/admin/tickets-dev/${id}`, { method: "DELETE" });
   };
 
+  // Convierte texto en bruto (notas pegadas de una reunión) en varios
+  // tickets de una -- la IA separa cada idea/punto distinto en su
+  // propia tarea, con título accionable y prioridad sugerida.
+  const organizarConIA = async () => {
+    if (!proyectoAbierto || !notasReunion.trim()) return;
+    setOrganizandoIA(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/tickets-dev/organizar-ia", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proyectoId: proyectoAbierto, texto: notasReunion }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setTickets((prev) => [...data.tickets, ...prev]);
+      setNotasReunion("");
+      setMostrarFormIA(false);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setOrganizandoIA(false);
+    }
+  };
+
   function ticketsDe(proyectoId: string) {
     return tickets.filter((t) => t.proyectoId === proyectoId);
   }
@@ -2730,15 +2758,46 @@ function ProyectosDevTab() {
 
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-white font-bold">Tickets</h3>
-          <button
-            onClick={() => setMostrarFormTicket((v) => !v)}
-            className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm px-4 py-2 rounded-lg transition-colors"
-          >
-            {mostrarFormTicket ? "Cancelar" : "+ Nuevo ticket"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setMostrarFormIA((v) => !v)}
+              className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm px-4 py-2 rounded-lg transition-colors"
+            >
+              {mostrarFormIA ? "Cancelar" : "✨ Organizar notas con IA"}
+            </button>
+            <button
+              onClick={() => setMostrarFormTicket((v) => !v)}
+              className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm px-4 py-2 rounded-lg transition-colors"
+            >
+              {mostrarFormTicket ? "Cancelar" : "+ Nuevo ticket"}
+            </button>
+          </div>
         </div>
 
         {error && <div className="text-red-400 text-sm mb-3">{error}</div>}
+
+        {mostrarFormIA && (
+          <div className="bg-slate-900/50 border border-cyan-500/30 rounded-xl p-4 mb-4 space-y-3">
+            <p className="text-slate-400 text-xs">
+              Pegá las notas de la reunión tal cual las tenés -- una lista, párrafos sueltos, como sea. La IA separa cada punto en un ticket propio,
+              con título, descripción y prioridad sugerida.
+            </p>
+            <textarea
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm"
+              placeholder="Ej: hay que arreglar el botón de pago que a veces no responde, agregar filtro por fecha en el reporte, el cliente pidió urgente el logo nuevo en el header..."
+              rows={6}
+              value={notasReunion}
+              onChange={(e) => setNotasReunion(e.target.value)}
+            />
+            <button
+              onClick={organizarConIA}
+              disabled={organizandoIA || !notasReunion.trim()}
+              className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold text-sm px-4 py-2 rounded-lg"
+            >
+              {organizandoIA ? "Organizando..." : "✨ Organizar y crear tickets"}
+            </button>
+          </div>
+        )}
 
         {mostrarFormTicket && (
           <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 mb-4 space-y-3">
@@ -2779,15 +2838,26 @@ function ProyectosDevTab() {
         <div className="space-y-2">
           {ts.map((t) => (
             <div key={t.id} className="bg-slate-900/50 border border-slate-800 rounded-lg p-3.5 flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <span className="text-white font-semibold text-sm">{t.titulo}</span>
-                  <span className={["text-[10px] font-bold uppercase", PRIORIDAD_TICKET_CONFIG[t.prioridad].color].join(" ")}>
-                    {PRIORIDAD_TICKET_CONFIG[t.prioridad].label}
-                  </span>
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <input
+                  type="checkbox"
+                  checked={t.estado === "hecho"}
+                  onChange={(e) => actualizarTicket(t.id, { estado: e.target.checked ? "hecho" : "pendiente" })}
+                  className="mt-1 w-4 h-4 shrink-0 accent-emerald-500 cursor-pointer"
+                  title="Marcar como hecho"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className={["font-semibold text-sm", t.estado === "hecho" ? "text-slate-500 line-through" : "text-white"].join(" ")}>
+                      {t.titulo}
+                    </span>
+                    <span className={["text-[10px] font-bold uppercase", PRIORIDAD_TICKET_CONFIG[t.prioridad].color].join(" ")}>
+                      {PRIORIDAD_TICKET_CONFIG[t.prioridad].label}
+                    </span>
+                  </div>
+                  {t.descripcion && <p className="text-slate-500 text-xs mb-1">{t.descripcion}</p>}
+                  {t.fechaHecho && <p className="text-emerald-500/70 text-[11px]">✓ Hecho el {fmtFecha(t.fechaHecho)}</p>}
                 </div>
-                {t.descripcion && <p className="text-slate-500 text-xs mb-1">{t.descripcion}</p>}
-                {t.fechaHecho && <p className="text-emerald-500/70 text-[11px]">✓ Hecho el {fmtFecha(t.fechaHecho)}</p>}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <select
